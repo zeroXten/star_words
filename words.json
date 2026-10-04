@@ -1,0 +1,145 @@
+{
+  "roundSize": 8,
+  "phrases": {
+    "_intro": "Tap each button to listen. Then drag the right one up to the word.",
+    "_praise1": "Well done!",
+    "_praise2": "Brilliant!",
+    "_praise3": "Stellar reading!",
+    "_praise4": "Out of this world!",
+    "_praise5": "Spot on!",
+    "_retry1": "Not quite. Try again.",
+    "_retry2": "Have another listen.",
+    "_finished": "Mission complete. Look at all your stars!"
+  },
+  "levels": [
+    {
+      "id": "three-letters",
+      "name": "Three letters",
+      "words": [
+        ["cat", "cot", "cap"],
+        ["dog", "dig", "dot"],
+        ["sun", "bun", "sub"],
+        ["pig", "peg", "pin"],
+        ["bus", "bug", "but"],
+        ["hat", "hot", "ham"],
+        ["bed", "bad", "beg"],
+        ["fox", "fix", "box"],
+        ["jam", "jab", "ham"],
+        ["web", "wet", "wig"],
+        ["mud", "mad", "mug"],
+        ["zip", "zap", "tip"],
+        ["hen", "hug", "ten"],
+        ["van", "can", "vet"],
+        ["log", "leg", "lot"],
+        ["nut", "net", "hut"]
+      ]
+    },
+    {
+      "id": "four-letters",
+      "name": "Four letters",
+      "words": [
+        ["frog", "fog", "flag"],
+        ["crab", "grab", "crib"],
+        ["drum", "drop", "plum"],
+        ["nest", "best", "next"],
+        ["milk", "mint", "silk"],
+        ["hand", "sand", "hunt"],
+        ["jump", "bump", "just"],
+        ["tent", "test", "went"],
+        ["lamp", "lump", "camp"],
+        ["sock", "sack", "rock"],
+        ["duck", "dock", "luck"],
+        ["bell", "bull", "tell"],
+        ["gift", "lift", "golf"],
+        ["swim", "slim", "swam"],
+        ["pond", "band", "pump"],
+        ["flag", "flat", "slug"]
+      ]
+    },
+    {
+      "id": "letter-teams",
+      "name": "Letter teams",
+      "words": [
+        ["ship", "shop", "chip"],
+        ["fish", "dish", "fist"],
+        ["moon", "soon", "moan"],
+        ["tree", "true", "tray"],
+        ["rain", "main", "ran"],
+        ["boat", "boot", "coat"],
+        ["chin", "shin", "chip"],
+        ["book", "cook", "beak"],
+        ["queen", "green", "quick"],
+        ["shark", "sharp", "shirt"],
+        ["tooth", "teeth", "booth"],
+        ["star", "stay", "car"],
+        ["sheep", "sleep", "shop"],
+        ["cloud", "clown", "loud"],
+        ["snail", "snake", "nail"]
+      ]
+    },
+    {
+      "id": "tricky-endings",
+      "name": "Tricky words",
+      "words": [
+        ["cake", "bake", "coke"],
+        ["kite", "bite", "kit"],
+        ["bone", "cone", "bun"],
+        ["cube", "tube", "cub"],
+        ["snake", "snack", "shake"],
+        ["smile", "smell", "mile"],
+        ["plane", "plan", "plate"],
+        ["whale", "while", "wheel"],
+        ["mouse", "house", "moose"],
+        ["tiger", "timer", "finger"],
+        ["robot", "rabbit", "robin"],
+        ["pirate", "private", "parrot"],
+        ["castle", "candle", "cattle"],
+        ["ghost", "goose", "most"],
+        ["zebra", "zero", "cobra"]
+      ]
+    },
+    {
+      "id": "longer-words",
+      "name": "Longer words",
+      "words": [
+        ["rocket", "pocket", "racket"],
+        ["dragon", "wagon", "dagger"],
+        ["planet", "plant", "blanket"],
+        ["monster", "master", "mister"],
+        ["wizard", "lizard", "window"],
+        ["jungle", "jingle", "juggle"],
+        ["pencil", "penguin", "parcel"],
+        ["spider", "cider", "spinner"],
+        ["rabbit", "habit", "ribbon"],
+        ["puzzle", "puddle", "muzzle"],
+        ["tunnel", "funnel", "turtle"],
+        ["giant", "grant", "giraffe"],
+        ["unicorn", "uniform", "acorn"],
+        ["puppet", "puppy", "poppet"],
+        ["magnet", "magic", "market"]
+      ]
+    },
+    {
+      "id": "big-words",
+      "name": "Big words",
+      "words": [
+        ["dinosaur", "dynamite", "minotaur"],
+        ["elephant", "elegant", "element"],
+        ["volcano", "tornado", "volume"],
+        ["astronaut", "asteroid", "astronomy"],
+        ["octopus", "October", "platypus"],
+        ["crocodile", "crocus", "chocolate"],
+        ["telescope", "telephone", "television"],
+        ["butterfly", "buttercup", "dragonfly"],
+        ["submarine", "tangerine", "submerge"],
+        ["treasure", "measure", "pleasure"],
+        ["adventure", "advantage", "addition"],
+        ["pyramid", "pyjamas", "period"],
+        ["kangaroo", "cockatoo", "kingdom"],
+        ["microscope", "microphone", "telescope"],
+        ["caterpillar", "catapult", "category"],
+        ["mysterious", "mystery", "serious"]
+      ]
+    }
+  ]
+}

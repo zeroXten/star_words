@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#05060f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Star Words">
+  <title>Star Words</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <button id="back" class="icon-btn" aria-label="Back to levels" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div id="progress" class="progress" aria-hidden="true"></div>
+    <div id="total" class="total" aria-label="Stars collected"></div>
+  </header>
+
+  <main id="home" class="screen">
+    <h1 class="logo"><span>Star</span><span>Words</span></h1>
+    <p class="sub">Choose your mission</p>
+    <div id="levels" class="levels"></div>
+  </main>
+
+  <main id="play" class="screen" hidden>
+    <div id="zone" class="zone">
+      <div id="word" class="word"></div>
+    </div>
+    <div id="options" class="options"></div>
+  </main>
+
+  <main id="done" class="screen" hidden>
+    <h2 class="done-title">Mission complete</h2>
+    <div id="done-stars" class="done-stars"></div>
+    <p id="done-text" class="done-text"></p>
+    <div class="done-actions">
+      <button id="again" class="btn primary">Fly again</button>
+      <button id="to-levels" class="btn">Missions</button>
+    </div>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>

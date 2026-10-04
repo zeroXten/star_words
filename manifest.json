@@ -1,0 +1,12 @@
+{
+  "name": "Star Words",
+  "short_name": "Star Words",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
