@@ -1,20 +1,24 @@
 {
-  "roundSize": 8,
   "phrases": {
-    "_intro": "Tap each button to listen. Then drag the right one up to the word.",
+    "_story": "A space storm has scattered the star crystals across the galaxy! Nova and her little droid Pip are flying out to find them. But Pip cannot read the word doors. Can you help?",
+    "_door": "This door is locked with a word. Pip has three guesses. Tap each one to listen. Then drag the right one up to the word.",
+    "_crystal": "You found a crystal!",
+    "_planetdone": "You found every crystal on this planet. The stars are shining again!",
     "_praise1": "Well done!",
     "_praise2": "Brilliant!",
     "_praise3": "Stellar reading!",
     "_praise4": "Out of this world!",
     "_praise5": "Spot on!",
     "_retry1": "Not quite. Try again.",
-    "_retry2": "Have another listen.",
-    "_finished": "Mission complete. Look at all your stars!"
+    "_retry2": "Have another listen."
   },
   "levels": [
     {
       "id": "three-letters",
       "name": "Three letters",
+      "planet": "Zand",
+      "env": "desert",
+      "at": [95, 165],
       "words": [
         ["cat", "cot", "cap"],
         ["dog", "dig", "dot"],
@@ -37,6 +41,10 @@
     {
       "id": "four-letters",
       "name": "Four letters",
+      "planet": "Fernu",
+      "env": "jungle",
+      "at": [60, 120],
+      "from": "three-letters",
       "words": [
         ["frog", "fog", "flag"],
         ["crab", "grab", "crib"],
@@ -59,6 +67,10 @@
     {
       "id": "letter-teams",
       "name": "Letter teams",
+      "planet": "Frostel",
+      "env": "ice",
+      "at": [85, 65],
+      "from": "four-letters",
       "words": [
         ["ship", "shop", "chip"],
         ["fish", "dish", "fist"],
@@ -80,6 +92,10 @@
     {
       "id": "tricky-endings",
       "name": "Tricky words",
+      "planet": "Coralis",
+      "env": "ocean",
+      "at": [150, 45],
+      "from": "letter-teams",
       "words": [
         ["cake", "bake", "coke"],
         ["kite", "bite", "kit"],
@@ -101,6 +117,10 @@
     {
       "id": "longer-words",
       "name": "Longer words",
+      "planet": "Embera",
+      "env": "lava",
+      "at": [200, 90],
+      "from": "tricky-endings",
       "words": [
         ["rocket", "pocket", "racket"],
         ["dragon", "wagon", "dagger"],
@@ -122,6 +142,10 @@
     {
       "id": "big-words",
       "name": "Big words",
+      "planet": "Neon City",
+      "env": "city",
+      "at": [205, 155],
+      "from": "longer-words",
       "words": [
         ["dinosaur", "dynamite", "minotaur"],
         ["elephant", "elegant", "element"],
@@ -139,6 +163,177 @@
         ["microscope", "microphone", "telescope"],
         ["caterpillar", "catapult", "category"],
         ["mysterious", "mystery", "serious"]
+      ]
+    },
+    {
+      "id": "colours",
+      "name": "Colours",
+      "planet": "Prisma",
+      "env": "candy",
+      "at": [150, 190],
+      "from": "three-letters",
+      "words": [
+        ["red", "bed", "rod"],
+        ["blue", "glue", "blow"],
+        ["green", "grin", "queen"],
+        ["pink", "sink", "pick"],
+        ["black", "block", "back"],
+        ["brown", "crown", "brain"],
+        ["white", "while", "wheat"],
+        ["yellow", "fellow", "yelled"],
+        ["orange", "orbit", "arrange"],
+        ["purple", "turtle", "puddle"],
+        ["grey", "grow", "prey"],
+        ["gold", "cold", "good"],
+        ["silver", "shiver", "sister"]
+      ]
+    },
+    {
+      "id": "animals",
+      "name": "Animals",
+      "planet": "Zoola",
+      "env": "jungle",
+      "at": [190, 225],
+      "from": "colours",
+      "words": [
+        ["cow", "now", "cat"],
+        ["horse", "house", "hose"],
+        ["lion", "line", "lemon"],
+        ["monkey", "money", "donkey"],
+        ["bear", "pear", "beard"],
+        ["panda", "pants", "pasta"],
+        ["giraffe", "garage", "graph"],
+        ["penguin", "pencil", "pumpkin"],
+        ["hippo", "happy", "hiccup"],
+        ["camel", "candle", "cabin"],
+        ["parrot", "carrot", "pirate"],
+        ["owl", "oil", "bowl"],
+        ["goat", "boat", "got"],
+        ["kitten", "mitten", "kitchen"],
+        ["puppy", "poppy", "puppet"]
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "planet": "Munchi",
+      "env": "meadow",
+      "at": [140, 255],
+      "from": "animals",
+      "words": [
+        ["apple", "ankle", "happy"],
+        ["bread", "bed", "broad"],
+        ["cheese", "chase", "choose"],
+        ["pizza", "pasta", "puzzle"],
+        ["egg", "leg", "edge"],
+        ["banana", "bandana", "pyjama"],
+        ["carrot", "parrot", "carpet"],
+        ["soup", "soap", "soon"],
+        ["toast", "coast", "test"],
+        ["pasta", "pizza", "paste"],
+        ["grape", "grab", "group"],
+        ["lemon", "melon", "lesson"],
+        ["honey", "money", "funny"],
+        ["biscuit", "basket", "brisket"],
+        ["butter", "button", "batter"]
+      ]
+    },
+    {
+      "id": "body",
+      "name": "My body",
+      "planet": "Wiggle Bay",
+      "env": "ocean",
+      "at": [80, 270],
+      "from": "food",
+      "words": [
+        ["head", "had", "heap"],
+        ["nose", "rose", "note"],
+        ["foot", "food", "fort"],
+        ["knee", "need", "key"],
+        ["ear", "eat", "air"],
+        ["mouth", "mouse", "month"],
+        ["teeth", "tooth", "teach"],
+        ["leg", "log", "beg"],
+        ["arm", "art", "aim"],
+        ["finger", "linger", "finish"],
+        ["elbow", "below", "yellow"],
+        ["tummy", "mummy", "tunnel"],
+        ["thumb", "thump", "thud"],
+        ["shoulder", "boulder", "soldier"],
+        ["toes", "nose", "ties"]
+      ]
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers",
+      "planet": "Digit City",
+      "env": "city",
+      "at": [35, 225],
+      "from": "body",
+      "words": [
+        ["one", "on", "once"],
+        ["two", "tow", "twin"],
+        ["three", "tree", "there"],
+        ["four", "fur", "hour"],
+        ["five", "fire", "dive"],
+        ["six", "sit", "mix"],
+        ["seven", "seen", "eleven"],
+        ["eight", "eat", "weight"],
+        ["nine", "none", "line"],
+        ["ten", "tin", "hen"],
+        ["eleven", "seven", "elephant"],
+        ["twelve", "twenty", "shelf"],
+        ["twenty", "plenty", "twelve"],
+        ["hundred", "hunted", "under"]
+      ]
+    },
+    {
+      "id": "vehicles",
+      "name": "Things that go",
+      "planet": "Vroom",
+      "env": "desert",
+      "at": [30, 165],
+      "from": "numbers",
+      "words": [
+        ["car", "cart", "jar"],
+        ["train", "rain", "tray"],
+        ["truck", "trick", "duck"],
+        ["bike", "bake", "like"],
+        ["lorry", "sorry", "lolly"],
+        ["tractor", "trailer", "actor"],
+        ["digger", "bigger", "dinner"],
+        ["taxi", "tacky", "text"],
+        ["scooter", "shooter", "scatter"],
+        ["ferry", "furry", "berry"],
+        ["tram", "trap", "team"],
+        ["jet", "get", "jot"],
+        ["wheel", "heel", "whale"],
+        ["engine", "angel", "ending"]
+      ]
+    },
+    {
+      "id": "space",
+      "name": "Space",
+      "planet": "Luna Base",
+      "env": "moon",
+      "at": [45, 35],
+      "from": "letter-teams",
+      "words": [
+        ["space", "spice", "pace"],
+        ["comet", "comic", "carpet"],
+        ["alien", "alone", "island"],
+        ["orbit", "robot", "order"],
+        ["galaxy", "gallery", "glassy"],
+        ["laser", "later", "lazy"],
+        ["meteor", "meter", "metal"],
+        ["gravity", "gravy", "cavity"],
+        ["mars", "march", "mask"],
+        ["earth", "early", "each"],
+        ["shuttle", "shuffle", "subtle"],
+        ["launch", "lunch", "laugh"],
+        ["rocket", "pocket", "racket"],
+        ["planet", "plant", "blanket"],
+        ["moon", "soon", "moan"]
       ]
     }
   ]

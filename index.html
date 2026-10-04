@@ -14,23 +14,43 @@
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Pixelify+Sans:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <canvas id="scene" hidden></canvas>
+
   <header class="bar">
-    <button id="back" class="icon-btn" aria-label="Back to levels" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <button id="back" class="icon-btn" aria-label="Back" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/></svg>
     </button>
-    <div id="progress" class="progress" aria-hidden="true"></div>
-    <div id="total" class="total" aria-label="Stars collected"></div>
+    <div id="progress" class="progress" aria-hidden="true" hidden></div>
+    <div id="label" class="label" hidden></div>
+    <button id="mute" class="icon-btn mute" aria-label="Music and sound effects on or off">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4h11v3H12v10.5A3.5 3.5 0 118.5 14H9z"/></svg>
+    </button>
+    <div id="total" class="total" aria-label="Crystals found" hidden></div>
   </header>
 
-  <main id="home" class="screen">
+  <main id="title" class="screen">
     <h1 class="logo"><span>Star</span><span>Words</span></h1>
-    <p class="sub">Choose your mission</p>
-    <div id="levels" class="levels"></div>
+    <canvas id="title-art"></canvas>
+    <button id="start" class="btn primary">Play</button>
   </main>
+
+  <main id="story" class="screen" hidden>
+    <canvas id="story-art"></canvas>
+    <p class="story-text">A space storm has scattered the star crystals across the galaxy!</p>
+    <p class="story-text">Nova and her little droid Pip are flying out to find them. But Pip cannot read the word doors.</p>
+    <p class="story-text hi">Can you help?</p>
+    <button id="go" class="btn primary">Let's go</button>
+  </main>
+
+  <main id="map" class="screen" hidden>
+    <div id="planets" class="planets"><canvas id="ship"></canvas></div>
+  </main>
+
+  <main id="planet" class="screen" hidden></main>
 
   <main id="play" class="screen" hidden>
     <div id="zone" class="zone">
@@ -39,16 +59,15 @@
     <div id="options" class="options"></div>
   </main>
 
-  <main id="done" class="screen" hidden>
-    <h2 class="done-title">Mission complete</h2>
-    <div id="done-stars" class="done-stars"></div>
-    <p id="done-text" class="done-text"></p>
-    <div class="done-actions">
-      <button id="again" class="btn primary">Fly again</button>
-      <button id="to-levels" class="btn">Missions</button>
-    </div>
-  </main>
+  <div id="reward" class="reward" hidden>
+    <canvas id="reward-art"></canvas>
+    <p id="reward-text"></p>
+  </div>
 
+  <div id="warp" hidden></div>
+
+  <script src="art.js"></script>
+  <script src="sound.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
