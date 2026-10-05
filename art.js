@@ -564,7 +564,7 @@ function drawScene(g, W, H, sc, t, crystals) {
   }
 
   const next = crystals.indexOf(false);
-  const idle = sc.target == null && !sc.phase;
+  const idle = sc.target == null && !sc.phase && !sc.bonus;
   sc.places.forEach((p, i) => {
     const pointed = i === next && idle;
     if (sc.level.aliens) drawAlien(g, p - cam, gy + 1, alienSprite(sc.level.aliens[i]), crystals[i], pointed, t, i);

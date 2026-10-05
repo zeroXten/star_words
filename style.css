@@ -427,6 +427,32 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 .w.nudge { animation: nudge .35s steps(4); }
 .sentence.win .w { border-bottom-color: transparent; }
 
+/* ---------- bonus games ---------- */
+
+#bonus { pointer-events: none; }
+.bonus-count {
+  margin: 4px 0 0;
+  font-family: var(--display);
+  font-size: clamp(20px, 6vw, 34px);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #000;
+}
+.bonus-count::before { content: "\2605  "; }
+.bonus-title {
+  margin: 18vh 0 0;
+  padding: 14px 18px;
+  font-family: var(--display);
+  font-size: clamp(13px, 4.2vw, 26px);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--yellow);
+  background: #05060fcc;
+  border: 4px solid var(--edge);
+  animation: pop .4s steps(5) both;
+}
+.bonus-star { width: 16px; height: 16px; fill: var(--yellow); margin-left: 6px; }
+.bonus-total { color: var(--yellow); }
+
 /* ---------- crystal reward ---------- */
 
 .reward {

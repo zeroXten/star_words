@@ -270,6 +270,13 @@ const sfx = {
   }),
   // a letter dropping into place; each one a step higher
   place: effect((t, step) => tone(sfxOut, t, pitch('C5', step * 2), 0.1, 'square', 0.16)),
+  // collecting a star in a bonus game; the note climbs as the tally grows
+  collect: effect((t, n) => tone(sfxOut, t, pitch('C5', (n % 8) * 2), 0.09, 'square', 0.16)),
+  // the ship's laser
+  zap: effect((t) => {
+    tone(sfxOut, t, 1500, 0.16, 'sawtooth', 0.2, 180);
+    hiss(sfxOut, t + 0.05, 0.2, 'lowpass', 2500, 300, 0.4);
+  }),
   correct: effect((t) => ['C5', 'E5', 'G5', 'C6'].forEach((n, i) => tone(sfxOut, t + i * 0.08, pitch(n), 0.12, 'square', 0.2))),
   wrong: effect((t) => {
     tone(sfxOut, t, 220, 0.16, 'triangle', 0.45, 170);

@@ -125,10 +125,10 @@ const PLANET_KEYS = [0, 2, -3, 5, -2, 3];
 
 function show(screen) {
   cur = screen;
-  for (const id of ['title', 'story', 'map', 'planet', 'play']) $(id).hidden = id !== screen;
+  for (const id of ['title', 'story', 'map', 'planet', 'play', 'bonus']) $(id).hidden = id !== screen;
   const onPlanet = screen === 'planet' || screen === 'play';
-  $('scene').hidden = !onPlanet;
-  $('back').hidden = !onPlanet;
+  $('scene').hidden = !onPlanet && screen !== 'bonus';
+  $('back').hidden = !onPlanet && screen !== 'bonus';
   $('progress').hidden = screen !== 'play';
   $('label').hidden = screen !== 'planet' && screen !== 'map';
   // once something on this planet is finished, offer to play it all again
@@ -137,6 +137,7 @@ function show(screen) {
   renderTotal();
   // quiet while words are being read out, soft under the story narration
   if (screen === 'play') setMusic(null);
+  else if (screen === 'bonus') setMusic('map', 7);
   else if (screen === 'planet') setMusic('planet', PLANET_KEYS[scene.seed % PLANET_KEYS.length]);
   else setMusic('map', store.galaxy === 'talk' ? 5 : 0, screen === 'story' ? 0.3 : 1);
   $('hyper').hidden = screen !== 'map';
@@ -146,7 +147,8 @@ function show(screen) {
 function renderTotal(bump) {
   const have = allLevels().reduce((n, level) => n + crystalsFor(level).filter(Boolean).length, 0);
   const el = $('total');
-  el.innerHTML = `<i class="gem on"></i><span>${have}</span>`;
+  // crystals from reading, and (once there are any) stars from the bonus games
+  el.innerHTML = `<i class="gem on"></i><span>${have}</span>` + (store.bonus ? `${starSvg('bonus-star')}<span class="bonus-total">${store.bonus}</span>` : '');
   if (bump) {
     el.classList.remove('bump');
     void el.offsetWidth;
@@ -940,8 +942,16 @@ async function finishZone() {
   await Promise.race([say('_crystal').then(() => (planetDone ? say('_planetdone') : null)), sleep(10000)]);
   await sleep(500);
   $('reward').hidden = true;
+  const gold = round.results.filter(Boolean).length;
   round = null;
   if (!scene) return;
+  // every so often, a bonus game before carrying on
+  store.sinceBonus = (store.sinceBonus || 0) + 1;
+  if (store.sinceBonus >= BONUS_EVERY) {
+    store.sinceBonus = 0;
+    await playBonus(gold);
+    if (!scene) return;
+  }
   show('planet');
   if (planetDone) pickUp();
 }
@@ -951,6 +961,7 @@ async function finishZone() {
 $('back').addEventListener('click', () => {
   hush();
   sfx.click();
+  if (bonus) return void (bonus.left = 0); // skip the rest of a bonus game
   drag = null;
   if (cur === 'play') {
     round = null;
