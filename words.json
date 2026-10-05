@@ -1,7 +1,7 @@
 {
   "phrases": {
-    "_story": "A space storm has scattered the star crystals across the galaxy! Nova and her little droid Pip are flying out to find them. But Pip cannot read the word doors. Can you help?",
-    "_door_listen": "Pip has three guesses. Tap each one to listen. Then drag the right one up to the word.",
+    "_story": "Beep boop! I'm Pip. A space storm has scattered the star crystals across the galaxy! Nova and I are flying out to find them. But I can't read the word doors. Can you help us?",
+    "_door_listen": "I have three guesses. Tap each one to listen. Then drag the right one up to the word.",
     "_door_find": "Listen to the word. Then tap the word that matches.",
     "_door_missing": "A letter is missing! Tap the letter that finishes the word.",
     "_door_build": "The letters are jumbled up! Tap them in the right order to spell the word.",
@@ -21,7 +21,7 @@
     "_praise11": "Amazing!",
     "_praise12": "Perfect!",
     "_praise13": "Super work!",
-    "_praise14": "Pip is impressed!",
+    "_praise14": "I'm impressed!",
     "_praise15": "You're a star!",
     "_praise16": "Nice one!",
     "_praise17": "Wow, clever you!",

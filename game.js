@@ -36,7 +36,7 @@ function shuffle(list) {
 
 /* ---------- saved progress ---------- */
 
-let store = { crystals: {}, seenStory: false, at: null, muted: false };
+let store = { crystals: {}, at: null, muted: false };
 try {
   store = Object.assign(store, JSON.parse(localStorage.getItem(STORE_KEY)));
 } catch {}
@@ -784,16 +784,15 @@ $('back').addEventListener('click', () => {
 $('start').addEventListener('click', () => {
   unlockAudio();
   sfx.click();
-  if (store.seenStory) return renderMap();
+  // Pip tells the story every time; the button below it skips ahead
   show('story');
-  say('_story');
+  sfx.chirp();
+  sleep(600).then(() => cur === 'story' && say('_story'));
 });
 
 $('go').addEventListener('click', () => {
   hush();
   sfx.click();
-  store.seenStory = true;
-  save();
   renderMap();
 });
 
@@ -811,6 +810,7 @@ $('hear').addEventListener('click', () => {
   say(round.answer.toLowerCase());
 });
 
+document.addEventListener('pointerdown', () => unlockAudio(), true);
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 function mount(id, picture) {
@@ -828,5 +828,10 @@ fetch('words.json')
     mount('reward-art', sprite(CRYSTAL));
     $('hear').prepend(sprite(PIP));
     applyMute();
+    // Browsers only allow sound after a first tap or click. Get everything ready now so the
+    // theme starts at once where that's already allowed, and on the first touch anywhere otherwise.
+    try {
+      unlockAudio();
+    } catch {}
     show('title');
   });
