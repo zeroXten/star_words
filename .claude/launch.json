@@ -4,7 +4,10 @@
     {
       "name": "word-stars",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8123"],
+      "runtimeArgs": [
+        "tools/serve.py",
+        "8123"
+      ],
       "port": 8123
     }
   ]

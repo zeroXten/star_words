@@ -1,7 +1,11 @@
 {
   "phrases": {
     "_story": "A space storm has scattered the star crystals across the galaxy! Nova and her little droid Pip are flying out to find them. But Pip cannot read the word doors. Can you help?",
-    "_door": "This door is locked with a word. Pip has three guesses. Tap each one to listen. Then drag the right one up to the word.",
+    "_door_listen": "Pip has three guesses. Tap each one to listen. Then drag the right one up to the word.",
+    "_door_find": "Listen to the word. Then tap the word that matches.",
+    "_door_missing": "A letter is missing! Tap the letter that finishes the word.",
+    "_door_build": "The letters are jumbled up! Tap them in the right order to spell the word.",
+    "_tap": "Tap the crystal to collect it!",
     "_crystal": "You found a crystal!",
     "_planetdone": "You found every crystal on this planet. The stars are shining again!",
     "_praise1": "Well done!",
@@ -9,8 +13,22 @@
     "_praise3": "Stellar reading!",
     "_praise4": "Out of this world!",
     "_praise5": "Spot on!",
+    "_praise6": "Fantastic!",
+    "_praise7": "You got it!",
+    "_praise8": "Great reading!",
+    "_praise9": "Excellent!",
+    "_praise10": "That's right!",
+    "_praise11": "Amazing!",
+    "_praise12": "Perfect!",
+    "_praise13": "Super work!",
+    "_praise14": "Pip is impressed!",
+    "_praise15": "You're a star!",
+    "_praise16": "Nice one!",
+    "_praise17": "Wow, clever you!",
     "_retry1": "Not quite. Try again.",
-    "_retry2": "Have another listen."
+    "_retry2": "Have another listen.",
+    "_retry3": "Nearly. Try another one.",
+    "_retry4": "Oops, not that one."
   },
   "levels": [
     {

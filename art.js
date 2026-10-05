@@ -353,14 +353,14 @@ function drawScene(g, W, H, sc, t, crystals) {
 
   for (let wx = 14; wx < sc.worldW; wx += 30) {
     const dx = wx + Math.floor(hash(wx + sc.seed) * 16);
-    if (Math.abs(dx - sc.shipX) < 26 || sc.places.some((p) => Math.abs(dx - p) < 20)) continue;
+    if (sc.pads.some((p) => Math.abs(dx - p) < 26) || sc.places.some((p) => Math.abs(dx - p) < 20)) continue;
     const kind = env.deco[Math.floor(hash(wx * 1.7 + sc.seed) * env.deco.length)];
     if (dx - cam > -20 && dx - cam < W + 20) DECO[kind](g, dx - cam, gy + 1, env, t);
   }
 
   const lift = Math.round((1 - sc.altitude) * (1 - sc.altitude) * (gy + 30));
   blit(g, SPR.ship, sc.shipX - 14 - cam, gy - 11 - lift);
-  if (sc.phase) {
+  if (sc.altitude < 1) {
     const flame = 3 + (Math.floor(t * 14) % 3);
     for (const fx of [-6, 5]) {
       rect(g, '#ffe81f', sc.shipX + fx - cam, gy - lift, 3, flame);
@@ -380,7 +380,7 @@ function drawScene(g, W, H, sc, t, crystals) {
     if (dir) for (let r = 0; r < 5; r++) rect(g, '#ffe81f', ax - dir * r - (dir < 0 ? 1 : 0), gy - 34 - r, 2, 2 * r + 1);
   }
 
-  if (sc.phase) return; // Nova and Pip are aboard
+  if (sc.phase === 'landing' || sc.phase === 'leaving') return; // Nova and Pip are aboard
 
   const bob = Math.round(Math.sin(t * 4) * 2);
   blit(g, SPR.pip, sc.pipX - 6 - cam, gy - 27 + bob, sc.facing < 0);

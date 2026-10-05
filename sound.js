@@ -256,10 +256,17 @@ const sfx = {
   chirp: effect((t) => {
     for (let i = 0; i < 5; i++) tone(sfxOut, t + i * 0.075, 900 + Math.random() * 1600, 0.06, 'square', 0.14, 900 + Math.random() * 1600);
   }),
+  // a letter dropping into place; each one a step higher
+  place: effect((t, step) => tone(sfxOut, t, pitch('C5', step * 2), 0.1, 'square', 0.16)),
   correct: effect((t) => ['C5', 'E5', 'G5', 'C6'].forEach((n, i) => tone(sfxOut, t + i * 0.08, pitch(n), 0.12, 'square', 0.2))),
   wrong: effect((t) => {
     tone(sfxOut, t, 220, 0.16, 'triangle', 0.45, 170);
     tone(sfxOut, t + 0.15, 165, 0.25, 'triangle', 0.45, 120);
+  }),
+  // a crystal appearing, waiting to be collected
+  appear: effect((t) => {
+    tone(sfxOut, t, pitch('E6'), 0.15, 'sine', 0.3);
+    tone(sfxOut, t + 0.12, pitch('B6'), 0.4, 'sine', 0.3);
   }),
   crystal: effect((t) => {
     ['E5', 'G5', 'B5', 'E6', 'G6', 'B6', 'E7'].forEach((n, i) => tone(sfxOut, t + i * 0.07, pitch(n), 0.25, 'sine', 0.3));

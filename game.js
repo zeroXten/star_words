@@ -6,13 +6,24 @@ const STORE_KEY = 'star-words-v2';
 const DRAG_THRESHOLD = 12;
 const ZONES = 3;
 const WALK_SPEED = 60;
+const COLLECT_AFTER = 6000; // ms before an untapped crystal collects itself
 
 const $ = (id) => document.getElementById(id);
 const starSvg = (cls = '') => `<svg class="${cls}" viewBox="0 0 24 24">${STAR}</svg>`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const phraseNames = (prefix) => Object.keys(data.phrases).filter((k) => k.startsWith(prefix));
+
+// Works through every phrase of a kind (praise, retry) in a shuffled order before
+// any comes round again, and never says the same one twice running.
+const phraseQueues = {};
+let lastPhrase = null;
+function nextPhrase(prefix) {
+  const queue = (phraseQueues[prefix] ||= []);
+  if (!queue.length) queue.push(...shuffle(Object.keys(data.phrases).filter((k) => k.startsWith(prefix))));
+  if (queue.length > 1 && queue[queue.length - 1] === lastPhrase) queue.unshift(queue.pop());
+  return (lastPhrase = queue.pop());
+}
 
 function shuffle(list) {
   const a = list.slice();
@@ -93,7 +104,7 @@ let data = null;
 let cur = 'title';
 let scene = null;
 let round = null;
-let doorExplained = false;
+let tapExplained = false;
 
 // each planet plays its tune in a different key
 const PLANET_KEYS = [0, 2, -3, 5, -2, 3];
@@ -245,8 +256,10 @@ function enterPlanet(level) {
     env: ENVS[level.env],
     seed: data.levels.indexOf(level) + 1,
     shipX: 40,
+    // where the ship can set down: on arrival, and past the last door to collect Nova
+    pads: [40, 470],
     places: [150, 270, 390],
-    worldW: 450,
+    worldW: 530,
     heroX: 66,
     pipX: 52,
     facing: 1,
@@ -277,7 +290,11 @@ function frame(now) {
   } else if (sc.phase === 'leaving') {
     sc.altitude = Math.max(0, sc.altitude - dt / 1.1);
     if (sc.altitude === 0) renderMap();
-  } else if (cur === 'planet' && sc.target != null) {
+  } else if (sc.phase === 'pickup') {
+    sc.altitude = Math.min(1, sc.altitude + dt / 1.6);
+    if (sc.altitude === 1 && sc.target == null) takeOff();
+  }
+  if (cur === 'planet' && sc.target != null && sc.phase !== 'landing' && sc.phase !== 'leaving') {
     const dx = sc.target - sc.heroX;
     if (Math.abs(dx) <= WALK_SPEED * dt) {
       sc.heroX = sc.target;
@@ -300,6 +317,16 @@ function frame(now) {
   raf = requestAnimationFrame(frame);
 }
 
+// Planet finished: the ship flies itself over to the far side and Nova walks on to meet it.
+function pickUp() {
+  scene.shipX = scene.pads[1];
+  scene.altitude = 0;
+  scene.phase = 'pickup';
+  scene.goal = null;
+  scene.target = scene.shipX - 24;
+  sfx.land();
+}
+
 function takeOff() {
   scene.target = null;
   scene.phase = 'leaving';
@@ -319,7 +346,16 @@ canvas.addEventListener('pointerdown', (e) => {
   const x = e.clientX / view.k + scene.cam;
   // a door that has already given up its crystal is just scenery
   const got = crystalsFor(scene.level);
-  const place = scene.places.findIndex((p, i) => !got[i] && Math.abs(x - p) < 22);
+  let place = scene.places.findIndex((p, i) => !got[i] && Math.abs(x - p) < 22);
+  // the yellow arrow at the screen edge means "next door is that way": tapping it goes all the way there
+  const next = got.indexOf(false);
+  if (place < 0 && next >= 0) {
+    const sx = e.clientX / view.k;
+    const sy = e.clientY / view.k;
+    const doorAt = scene.places[next] - scene.cam;
+    const onArrow = (doorAt > view.W - 8 && sx > view.W - 26) || (doorAt < 8 && sx < 26);
+    if (onArrow && sy > scene.groundY - 62 && sy < scene.groundY - 8) place = next;
+  }
   if (place >= 0) {
     scene.goal = place;
     scene.target = scene.places[place] - 16;
@@ -339,19 +375,37 @@ function zoneWords(level, zone) {
   return level.words.slice(Math.round((zone * n) / ZONES), Math.round(((zone + 1) * n) / ZONES));
 }
 
+// Each door plays one of four games. A planet's three doors are all different,
+// and which three a planet gets shifts along from one planet to the next.
+const FORMATS = ['listen', 'find', 'missing', 'build'];
+const BUILD_MAX_LETTERS = 5;
+
+function formatFor(level, zone) {
+  const i = data.levels.indexOf(level);
+  const format = FORMATS[(i + zone) % FORMATS.length];
+  const short = zoneWords(level, zone).every(([word]) => word.length <= BUILD_MAX_LETTERS);
+  // spelling out long words is too hard: use the game this planet would otherwise skip
+  return format === 'build' && !short ? FORMATS[(i + ZONES) % FORMATS.length] : format;
+}
+
 function startZone(zone) {
   scene.facing = 1;
   const questions = shuffle(zoneWords(scene.level, zone));
   // Deal the right answer's position evenly (left, middle, right) so it can't keep landing in one spot.
   const slots = questions.flatMap((_, i) => (i % 3 ? [] : shuffle([0, 1, 2])));
-  round = { zone, questions, slots, index: 0, results: [] };
+  const mine = (round = { zone, format: formatFor(scene.level, zone), questions, slots, index: 0, results: [] });
   show('play');
   showQuestion();
   sfx.chirp();
-  if (!doorExplained) {
-    doorExplained = true;
-    sleep(500).then(() => cur === 'play' && say('_door'));
-  }
+  sleep(500)
+    .then(() => cur === 'play' && round === mine && say('_door_' + mine.format))
+    .then(() => sayWord(mine, 0));
+}
+
+// Reads the current word aloud, unless the player has already moved on.
+function sayWord(r, index) {
+  if (cur !== 'play' || round !== r || r.index !== index || r.locked || r.format === 'listen') return;
+  return say(r.answer.toLowerCase());
 }
 
 function renderProgress() {
@@ -365,25 +419,122 @@ function renderProgress() {
 
 function showQuestion() {
   const [answer, ...others] = round.questions[round.index];
-  round.answer = answer;
-  round.firstTry = true;
-  round.locked = false;
+  Object.assign(round, { answer, firstTry: true, locked: false });
   renderProgress();
+  load(answer.toLowerCase());
 
-  const word = $('word');
-  word.className = 'word';
-  word.style.setProperty('--n', Math.max(answer.length, 3));
-  word.innerHTML = [...answer].map((ch, i) => `<div class="tile" style="--i:${i}"><span>${ch}</span></div>`).join('');
+  $('play').dataset.format = round.format;
+  $('hear').hidden = round.format === 'listen';
+  $('word').className = 'word';
+  $('options').innerHTML = '';
+  GAMES[round.format](answer, others);
 
-  const options = $('options');
-  options.innerHTML = '';
-  const choices = shuffle(others);
-  choices.splice(round.slots[round.index], 0, answer);
-  for (const choice of choices) {
-    load(choice.toLowerCase());
-    options.append(makeDisc(choice));
-  }
+  const mine = round;
+  const index = round.index;
+  if (index > 0) sleep(300).then(() => sayWord(mine, index));
 }
+
+function showTiles(letters) {
+  const word = $('word');
+  word.style.setProperty('--n', Math.max(letters.length, 3));
+  word.innerHTML = letters.map((ch, i) => `<div class="tile${ch ? '' : ' blank'}" style="--i:${i}">${ch || ''}</div>`).join('');
+  return [...word.children];
+}
+
+function keyTile(letter, onTap) {
+  const key = document.createElement('button');
+  key.className = 'tile key';
+  key.textContent = letter;
+  key.addEventListener('click', () => round && !round.locked && onTap(key));
+  return key;
+}
+
+// Puts the right answer at this question's dealt position among the wrong ones.
+function dealChoices(right, wrong) {
+  const choices = shuffle(wrong);
+  choices.splice(round.slots[round.index], 0, right);
+  return choices;
+}
+
+const GAMES = {
+  // the word is written; three sound buttons, drag the right one onto it
+  listen(answer, others) {
+    showTiles([...answer]);
+    for (const choice of dealChoices(answer, others)) {
+      load(choice.toLowerCase());
+      $('options').append(makeDisc(choice));
+    }
+  },
+
+  // the word is spoken; three written words, tap the right one
+  find(answer, others) {
+    const options = $('options');
+    options.style.setProperty('--n', Math.max(5, answer.length, ...others.map((o) => o.length)));
+    for (const choice of dealChoices(answer, others)) {
+      const card = document.createElement('button');
+      card.className = 'card';
+      card.textContent = choice;
+      card.addEventListener('click', () => {
+        if (!round || round.locked) return;
+        if (choice !== answer) return miss(card, true);
+        card.classList.add('right');
+        win();
+      });
+      options.append(card);
+    }
+  },
+
+  // the word is spoken and written with one letter missing; tap the letter
+  missing(answer, others) {
+    const word = answer.toLowerCase();
+    const rivals = shuffle(others.map((o) => o.toLowerCase()).filter((o) => o.length === word.length));
+    // hide a letter that tells this word apart from a near-miss, when there is one
+    const telling = rivals.map((o) => [...word].flatMap((ch, i) => (ch === o[i] ? [] : [i]))).find((spots) => spots.length);
+    const at = telling ? pick(telling) : Math.floor(Math.random() * word.length);
+    const right = word[at];
+    const wrong = [...new Set(rivals.map((o) => o[at]).filter((ch) => ch !== right))];
+    const spare = shuffle([...('aeiou'.includes(right) ? 'aeiou' : 'bcdfghjklmnprstvw')]);
+    while (wrong.length < 2) {
+      const ch = spare.pop();
+      if (ch !== right && !wrong.includes(ch)) wrong.push(ch);
+    }
+
+    const tiles = showTiles([...word].map((ch, i) => (i === at ? '' : ch)));
+    for (const letter of dealChoices(right, wrong.slice(0, 2))) {
+      $('options').append(
+        keyTile(letter, (key) => {
+          if (letter !== right) return miss(key, true);
+          tiles[at].textContent = right;
+          tiles[at].classList.remove('blank');
+          key.classList.add('used');
+          win();
+        })
+      );
+    }
+  },
+
+  // the word is spoken; its letters are jumbled, tap them in order
+  build(answer) {
+    const word = [...answer.toLowerCase()];
+    const tiles = showTiles(word.map(() => ''));
+    let jumbled = shuffle(word);
+    while (word.length > 1 && new Set(word).size > 1 && jumbled.join('') === word.join('')) jumbled = shuffle(word);
+    let placed = 0;
+    $('options').style.setProperty('--n', Math.max(word.length, 3));
+    for (const letter of jumbled) {
+      $('options').append(
+        keyTile(letter, (key) => {
+          if (letter !== word[placed]) return miss(key, false);
+          tiles[placed].textContent = letter;
+          tiles[placed].classList.remove('blank');
+          key.classList.add('used');
+          sfx.place(placed);
+          if (++placed === word.length) win();
+        })
+      );
+    }
+  },
+};
 
 function makeDisc(choice) {
   const disc = document.createElement('button');
@@ -441,31 +592,99 @@ async function listen(disc, choice) {
   disc.classList.remove('speaking');
 }
 
-async function choose(disc, choice) {
+function choose(disc, choice) {
   if (choice !== round.answer) {
-    round.firstTry = false;
     disc.style.transform = '';
-    disc.classList.add('wrong', 'out');
-    hush();
-    sfx.wrong();
-    sleep(450).then(() => say(pick(phraseNames('_retry'))));
-    return;
+    return miss(disc, true);
   }
-
-  const mine = round;
-  round.locked = true;
   disc.classList.add('gone');
   document.querySelectorAll('.disc').forEach((d) => d !== disc && d.classList.add('out'));
+  win();
+}
+
+// A wrong pick. `rule` it out (greyed, can't be picked again) or just shake it.
+function miss(el, rule) {
+  const mine = round;
+  const index = round.index;
+  round.firstTry = false;
+  el.classList.remove('wrong');
+  void el.offsetWidth;
+  el.classList.add('wrong');
+  if (rule) el.classList.add('out');
+  hush();
+  sfx.wrong();
+  sleep(450)
+    .then(() => round === mine && round.index === index && !round.locked && say(nextPhrase('_retry')))
+    .then((spoke) => spoke !== false && sayWord(mine, index));
+}
+
+// Little squares flying outwards from a point.
+function burst(cx, cy, size, count, color) {
+  for (let i = 0; i < count; i++) {
+    const spark = document.createElement('i');
+    spark.className = 'spark';
+    spark.style.left = cx + 'px';
+    spark.style.top = cy + 'px';
+    if (color) spark.style.background = color;
+    document.body.append(spark);
+    const angle = (i / count) * Math.PI * 2;
+    const reach = size * (0.7 + (i % 3) * 0.2);
+    spark
+      .animate(
+        [{ transform: 'translate(-50%, -50%)', opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(angle) * reach}px), calc(-50% + ${Math.sin(angle) * reach}px))`, opacity: 0 }],
+        { duration: 650, delay: 120, easing: 'ease-out', fill: 'both' }
+      )
+      .finished.then(() => spark.remove());
+  }
+}
+
+// A big star bursts out over the word, then flies up to its place in the row at the top.
+// Gold for a first-try answer, silver otherwise.
+function flyStar(gold) {
+  const from = (document.querySelector('.card.right') || $('zone')).getBoundingClientRect();
+  const to = $('progress').children[round.index].getBoundingClientRect();
+  const size = Math.min(innerWidth * 0.45, innerHeight * 0.32, 240);
+  const cx = from.left + from.width / 2;
+  const cy = from.top + from.height / 2;
+
+  burst(cx, cy, size, 12);
+
+  const star = document.createElement('div');
+  star.className = 'fly-star' + (gold ? '' : ' silver');
+  star.innerHTML = starSvg();
+  star.style.cssText = `width:${size}px;height:${size}px;left:${cx - size / 2}px;top:${cy - size / 2}px`;
+  document.body.append(star);
+  const land = `translate(${to.left + to.width / 2 - cx}px, ${to.top + to.height / 2 - cy}px) scale(${to.width / size}) rotate(360deg)`;
+  star
+    .animate(
+      [
+        { transform: 'scale(0) rotate(-120deg)', offset: 0 },
+        { transform: 'scale(1.25) rotate(0deg)', offset: 0.22 },
+        { transform: 'scale(1) rotate(0deg)', offset: 0.32 },
+        { transform: 'scale(1) rotate(0deg)', offset: 0.6 },
+        { transform: land, offset: 1 },
+      ],
+      { duration: 1400, easing: 'ease-in-out', fill: 'forwards' }
+    )
+    .finished.then(() => {
+      star.remove();
+      if (round && cur === 'play') renderProgress();
+    });
+}
+
+async function win() {
+  const mine = round;
+  round.locked = true;
   $('word').classList.add('win');
   round.results[round.index] = round.firstTry;
-  renderProgress();
+  flyStar(round.firstTry);
   hush();
   sfx.correct();
   await sleep(400);
 
   // The timeout keeps the game moving even if a clip fails to play.
   await Promise.race([
-    say(round.answer.toLowerCase()).then(() => say(pick(phraseNames('_praise')))),
+    say(round.answer.toLowerCase()).then(() => say(nextPhrase('_praise'))),
     sleep(5000),
   ]);
   await sleep(500);
@@ -483,19 +702,69 @@ async function finishZone() {
   got[round.zone] = true;
   store.crystals[level.id] = got;
   save();
-  renderTotal(true);
-
   const planetDone = got.every(Boolean) && !wasComplete;
-  $('reward-text').textContent = planetDone ? 'Planet complete!' : 'Crystal found!';
+
+  // The crystal appears and waits to be tapped; after a few seconds it collects itself.
+  const art = $('reward-art');
+  art.getAnimations().forEach((anim) => anim.cancel()); // undo the last crystal's flight
+  art.classList.remove('taken');
+  $('reward-text').textContent = 'Tap the crystal!';
   $('reward').hidden = false;
+  sfx.appear();
+  if (!tapExplained) {
+    tapExplained = true;
+    sleep(500).then(() => say('_tap'));
+  }
+  const waiting = new AbortController();
+  await Promise.race([
+    new Promise((tapped) => art.addEventListener('pointerdown', tapped, { once: true, signal: waiting.signal })),
+    sleep(COLLECT_AFTER),
+  ]);
+  waiting.abort();
+
+  // it flies up to the crystal counter
+  hush();
   sfx.crystal();
-  if (planetDone) sleep(900).then(sfx.fanfare);
-  await sleep(planetDone ? 2700 : 900);
+  const from = art.getBoundingClientRect();
+  const to = $('total').getBoundingClientRect();
+  art.classList.add('taken');
+  // a flash, a ring and a shower of sparks as it's grabbed, then it swells and shoots off
+  const cx = from.left + from.width / 2;
+  const cy = from.top + from.height / 2;
+  $('reward').animate([{ backgroundColor: '#dff6ff' }, { backgroundColor: '#05060fe6' }], { duration: 350, easing: 'ease-out' });
+  burst(cx, cy, from.height * 1.1, 18, '#6fe3ff');
+  burst(cx, cy, from.height * 0.6, 9, '#ffffff');
+  const ring = document.createElement('i');
+  ring.className = 'ring';
+  ring.style.left = cx + 'px';
+  ring.style.top = cy + 'px';
+  document.body.append(ring);
+  ring.animate([{ transform: 'translate(-50%, -50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%, -50%) scale(4)', opacity: 0 }], { duration: 600, easing: 'ease-out' }).finished.then(() => ring.remove());
+  const land = `translate(${to.left + to.width / 2 - cx}px, ${to.top + to.height / 2 - cy}px) scale(.12) rotate(360deg)`;
+  art.animate(
+    [
+      { transform: 'scale(1)', opacity: 1, offset: 0 },
+      { transform: 'scale(1.45)', opacity: 1, offset: 0.18 },
+      { transform: 'scale(1.3)', opacity: 1, offset: 0.4 },
+      { transform: land, opacity: 1, offset: 0.97 },
+      { transform: land, opacity: 0, offset: 1 },
+    ],
+    { duration: 950, easing: 'ease-in-out', fill: 'forwards' }
+  );
+  $('reward-text').textContent = planetDone ? 'Planet complete!' : 'Crystal found!';
+  await sleep(950);
+  renderTotal(true);
+  if (planetDone) {
+    sfx.fanfare();
+    await sleep(1900);
+  }
   await Promise.race([say('_crystal').then(() => (planetDone ? say('_planetdone') : null)), sleep(10000)]);
-  await sleep(700);
+  await sleep(500);
   $('reward').hidden = true;
   round = null;
-  if (scene) show('planet');
+  if (!scene) return;
+  show('planet');
+  if (planetDone) pickUp();
 }
 
 /* ---------- wiring ---------- */
@@ -536,6 +805,12 @@ $('mute').addEventListener('click', () => {
   sfx.click();
 });
 
+$('hear').addEventListener('click', () => {
+  if (!round || round.locked) return;
+  unlockAudio();
+  say(round.answer.toLowerCase());
+});
+
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 function mount(id, picture) {
@@ -551,6 +826,7 @@ fetch('words.json')
     mount('story-art', castPicture());
     mount('ship', sprite(SHIP));
     mount('reward-art', sprite(CRYSTAL));
+    $('hear').prepend(sprite(PIP));
     applyMute();
     show('title');
   });

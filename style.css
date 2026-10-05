@@ -300,6 +300,65 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 .disc.out { opacity: .25; pointer-events: none; }
 .disc.gone { opacity: 0; pointer-events: none; }
 
+/* ---------- the other door games ---------- */
+
+/* Pip says the word: tap to hear it again */
+.hear {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  color: var(--yellow);
+  background: var(--panel);
+  border: 4px solid var(--edge);
+  box-shadow: 0 6px 0 #000;
+}
+.hear:active { transform: translateY(4px); box-shadow: 0 2px 0 #000; }
+.hear canvas { width: clamp(40px, 9vh, 66px); height: auto; }
+.hear svg { width: clamp(26px, 6vh, 40px); height: clamp(26px, 6vh, 40px); }
+
+/* "find": no written word up top, so Pip gets the space */
+#play[data-format="find"] .zone { display: none; }
+#play[data-format="find"] .hear canvas { width: clamp(66px, 16vh, 132px); }
+#play[data-format="find"] .hear svg { width: clamp(36px, 9vh, 64px); height: clamp(36px, 9vh, 64px); }
+#play[data-format="find"] .options { flex-direction: column; align-items: center; width: 100%; gap: clamp(10px, 2.4vh, 22px); }
+
+.card {
+  width: min(100%, 544px);
+  padding: .12em 0 .16em;
+  border: 4px solid var(--edge);
+  background: var(--tile);
+  color: var(--tile-ink);
+  font-family: "Andika", "Century Gothic", system-ui, sans-serif;
+  font-size: min(9vh, calc((min(100vw, 568px) - 64px) / var(--n) / .8));
+  line-height: 1.15;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: inset -5px -5px 0 #0002, 0 6px 0 #000;
+}
+.card.right { background: var(--yellow); }
+
+.card.wrong, .key.wrong { animation: shake .4s steps(6); }
+.card.out, .key.out { opacity: .25; pointer-events: none; }
+
+/* an empty space waiting for its letter */
+.tile.blank { background: #0c2244; border: max(2px, calc(var(--size) * .04)) dashed var(--holo); box-shadow: none; }
+
+/* letter tiles you tap */
+#play[data-format="missing"] .options { --size: min(15vh, 22vw); gap: clamp(12px, 5vw, 40px); }
+#play[data-format="build"] .options { --size: min(15vh, calc((100vw - 48px) / var(--n) / 1.08)); gap: calc(var(--size) * .14); }
+.key { padding: 0; cursor: pointer; }
+.key.used { visibility: hidden; }
+
+/* ---------- the star for a right answer ---------- */
+
+.fly-star { position: fixed; z-index: 30; pointer-events: none; filter: drop-shadow(5px 5px 0 #000) drop-shadow(0 0 14px #ffe81f88); }
+.fly-star svg { width: 100%; height: 100%; fill: var(--yellow); stroke: var(--edge); stroke-width: .8; stroke-linejoin: round; }
+.fly-star.silver { filter: drop-shadow(5px 5px 0 #000); }
+.fly-star.silver svg { fill: #dfe6f5; }
+.ring { position: fixed; z-index: 29; width: 90px; height: 90px; border: 6px solid var(--holo); border-radius: 50%; pointer-events: none; }
+.spark { position: fixed; z-index: 29; width: 10px; height: 10px; background: var(--yellow); pointer-events: none; }
+
 /* ---------- crystal reward ---------- */
 
 .reward {
@@ -314,6 +373,8 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
   background: #05060fe6;
 }
 #reward-art { width: min(40vw, 30vh, 180px); height: auto; animation: pop .6s steps(6) both, hover 1s .6s steps(2) infinite alternate; }
+#reward-art { cursor: pointer; touch-action: none; }
+#reward-art.taken { animation: none; pointer-events: none; }
 #reward-text {
   margin: 0;
   font-family: var(--display);
@@ -331,6 +392,12 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
   .zone { padding: 8px 4px; }
   .word { --size: min(30vh, calc((100vw - 60px) / var(--n))); }
   .disc { --d: clamp(60px, 24vh, 100px); }
+  .hear { padding: 2px 12px; }
+  #play[data-format="find"] .options { flex-direction: row; gap: 12px; }
+  #play[data-format="find"] .hear canvas { width: 20vh; }
+  .card { flex: 1; width: auto; font-size: min(15vh, calc((100vw - 90px) / 3 / var(--n) / .8)); }
+  #play[data-format="missing"] .options, #play[data-format="build"] .options { --size: min(17vh, calc((100vw - 48px) / var(--n, 3) / 1.08)); }
+  #play[data-format="missing"] .word, #play[data-format="build"] .word { --size: min(24vh, calc((100vw - 60px) / var(--n))); }
   .logo { flex-direction: row; gap: .4em; font-size: clamp(24px, 6vw, 48px); }
   #title-art, #story-art { width: min(40vw, 300px); }
   #title, #story { gap: 10px; }
