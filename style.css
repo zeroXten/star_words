@@ -427,6 +427,38 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 .w.nudge { animation: nudge .35s steps(4); }
 .sentence.win .w { border-bottom-color: transparent; }
 
+/* ---------- the grown-ups' page ---------- */
+
+.btn.quiet { padding: 10px 16px; font-size: 10px; color: var(--muted); box-shadow: 0 4px 0 #000; }
+
+#stats { overflow-y: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }
+.stats-title { margin: 0 0 14px; font-family: var(--display); font-weight: 400; font-size: clamp(14px, 4.4vw, 22px); color: var(--yellow); text-transform: uppercase; }
+.stats-body { width: 100%; max-width: 720px; padding-bottom: 30px; font-family: "Andika", system-ui, sans-serif; font-size: 16px; line-height: 1.4; }
+.stats-body h3 { margin: 26px 0 8px; font-family: var(--display); font-weight: 400; font-size: 12px; color: var(--holo); text-transform: uppercase; }
+.stats-body .note { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tally p { margin: 0; padding: 12px 6px; text-align: center; background: var(--panel); border: 3px solid var(--edge); font-size: 14px; }
+.tally b { display: block; font-family: var(--display); font-weight: 400; font-size: clamp(20px, 6vw, 30px); margin-bottom: 6px; }
+.tally .known b { color: #6be08a; }
+.tally .learning b { color: var(--yellow); }
+.tally .new b { color: var(--muted); }
+
+.chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.chip { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 10px; background: var(--panel); border-left: 5px solid var(--muted); }
+.chip b { font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
+.chip span { color: var(--yellow); font-size: 13px; letter-spacing: 1px; white-space: nowrap; }
+.chip span i { font-style: normal; color: #ffffff2e; }
+.chip.known { border-left-color: #6be08a; }
+.chip.learning { border-left-color: var(--yellow); }
+.chip.new { opacity: .6; }
+.chip.new span { color: var(--muted); letter-spacing: 0; }
+
+.stats-body details { margin-top: 6px; background: #0b1030; border: 3px solid var(--edge); }
+.stats-body summary { padding: 10px 12px; cursor: pointer; font-weight: 700; font-size: 17px; }
+.stats-body summary small { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 6px; }
+.stats-body details .chips { padding: 0 8px 10px; }
+
 /* ---------- bonus games ---------- */
 
 #bonus { pointer-events: none; }

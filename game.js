@@ -37,7 +37,7 @@ function shuffle(list) {
 
 /* ---------- saved progress ---------- */
 
-let store = { crystals: {}, at: {}, galaxy: 'words', muted: false };
+let store = { crystals: {}, at: {}, galaxy: 'words', muted: false, words: {} };
 try {
   store = Object.assign(store, JSON.parse(localStorage.getItem(STORE_KEY)));
 } catch {}
@@ -47,6 +47,36 @@ function save() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(store));
   } catch {}
+}
+
+/* ---------- which words she can read ----------
+   For every word tested, store.words keeps [times asked, results of the last five goes],
+   the results being a string like "11011": 1 = right first time, 0 = needed more than one go. */
+
+const RECENT = 5;
+const wordKey = (word) => word.toLowerCase().replace(/[^a-z]/g, '');
+
+function recordWord(word, firstTry) {
+  const key = wordKey(word);
+  if (!key) return;
+  const [asked, recent] = store.words[key] || [0, ''];
+  store.words[key] = [asked + 1, (recent + (firstTry ? 1 : 0)).slice(-RECENT)];
+}
+
+// In a conversation, the words being tested are the ones that tell the right
+// sentence apart from the wrong ones.
+function focusWords([right, ...wrong]) {
+  const words = right.split(' ').map(wordKey);
+  return [...new Set(wrong.flatMap((other) => words.filter((word, i) => word !== wordKey(other.split(' ')[i] || ''))))];
+}
+
+// null if never asked; otherwise stars out of five and whether it counts as known
+function wordRating(word) {
+  const entry = store.words[wordKey(word)];
+  if (!entry) return null;
+  const [asked, recent] = entry;
+  const stars = Math.round((5 * [...recent].filter((r) => r === '1').length) / recent.length);
+  return { asked, stars, known: asked >= 2 && stars >= 4 };
 }
 
 const crystalsFor = (level) => (store.crystals[level.id] || Array(ZONES).fill(false)).slice();
@@ -125,15 +155,16 @@ const PLANET_KEYS = [0, 2, -3, 5, -2, 3];
 
 function show(screen) {
   cur = screen;
-  for (const id of ['title', 'story', 'map', 'planet', 'play', 'bonus']) $(id).hidden = id !== screen;
+  for (const id of ['title', 'story', 'map', 'planet', 'play', 'bonus', 'stats']) $(id).hidden = id !== screen;
   const onPlanet = screen === 'planet' || screen === 'play';
   $('scene').hidden = !onPlanet && screen !== 'bonus';
-  $('back').hidden = !onPlanet && screen !== 'bonus';
+  $('back').hidden = !onPlanet && screen !== 'bonus' && screen !== 'stats';
   $('progress').hidden = screen !== 'play';
   $('label').hidden = screen !== 'planet' && screen !== 'map';
   // once something on this planet is finished, offer to play it all again
   $('redo').hidden = screen !== 'planet' || !scene.done.some(Boolean);
   $('total').hidden = screen === 'title' || screen === 'story';
+  if (screen !== 'play') document.querySelectorAll('.fly-star, .spark').forEach((n) => n.remove());
   renderTotal();
   // quiet while words are being read out, soft under the story narration
   if (screen === 'play') setMusic(null);
@@ -859,10 +890,14 @@ async function win() {
   round.locked = true;
   $('word').classList.add('win');
   round.results[round.index] = round.firstTry;
+  const tested = round.format === 'talk' ? focusWords(round.questions[round.index]) : [round.answer];
+  tested.forEach((word) => recordWord(word, round.firstTry));
+  save();
   flyStar(round.firstTry);
   hush();
   sfx.correct();
   await sleep(400);
+  if (round !== mine) return; // she left while the star was flying
 
   // Pip reads the answer back. In a conversation, praise waits for the final line so the chat keeps moving.
   const praise = round.format !== 'talk' || round.index === round.questions.length - 1;
@@ -962,6 +997,7 @@ $('back').addEventListener('click', () => {
   hush();
   sfx.click();
   if (bonus) return void (bonus.left = 0); // skip the rest of a bonus game
+  if (cur === 'stats') return show('title');
   drag = null;
   if (cur === 'play') {
     round = null;
@@ -978,6 +1014,55 @@ $('start').addEventListener('click', () => {
   show('story');
   sfx.chirp();
   sleep(600).then(() => cur === 'story' && say('_story'));
+});
+
+/* ---------- the grown-ups' page ---------- */
+
+function wordsTested(level) {
+  const words = level.aliens ? level.aliens.flatMap((alien) => alien.lines.flatMap((line) => focusWords(line.say))) : level.words.map(([word]) => word);
+  return [...new Set(words.map(wordKey))];
+}
+
+function renderStats() {
+  const stars = (n) => '★'.repeat(n) + '<i>' + '★'.repeat(5 - n) + '</i>';
+  const chip = (word) => {
+    const r = wordRating(word);
+    const state = !r ? 'new' : r.known ? 'known' : 'learning';
+    return `<li class="chip ${state}"><b>${word}</b><span>${r ? stars(r.stars) : 'not yet'}</span></li>`;
+  };
+  // weakest first, and among equals the ones tried most
+  const byNeed = (a, b) => wordRating(a).stars - wordRating(b).stars || wordRating(b).asked - wordRating(a).asked;
+
+  const all = [...new Set(allLevels().flatMap(wordsTested))];
+  const met = all.filter((word) => wordRating(word));
+  const known = met.filter((word) => wordRating(word).known);
+  const learning = met.filter((word) => !wordRating(word).known).sort(byNeed);
+
+  let html =
+    `<div class="tally"><p class="known"><b>${known.length}</b>can read</p><p class="learning"><b>${learning.length}</b>still learning</p>` +
+    `<p class="new"><b>${all.length - met.length}</b>not met yet</p></div>` +
+    '<p class="note">Stars show how often a word was read correctly at the first try, over its last five goes. ' +
+    'A word counts as “can read” at four or five stars after at least two goes.</p>';
+  if (!met.length) html += '<p class="note">Nothing here yet: it fills in as words are played.</p>';
+  if (learning.length) html += `<h3>Still learning</h3><ul class="chips">${learning.map(chip).join('')}</ul>`;
+
+  for (const [galaxy, title] of Object.entries(GALAXIES)) {
+    html += `<h3 class="galaxy-name">${title}</h3>`;
+    for (const level of levelsIn(galaxy)) {
+      const words = wordsTested(level);
+      const can = words.filter((word) => (wordRating(word) || {}).known).length;
+      html += `<details><summary>${level.planet} <small>${level.name} · ${can} of ${words.length} read</small></summary><ul class="chips">${words.map(chip).join('')}</ul></details>`;
+    }
+  }
+  $('stats-body').innerHTML = html;
+  show('stats');
+  $('stats').scrollTop = 0;
+}
+
+$('grownups').addEventListener('click', () => {
+  unlockAudio();
+  sfx.click();
+  renderStats();
 });
 
 $('go').addEventListener('click', () => {
