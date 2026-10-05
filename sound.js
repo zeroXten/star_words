@@ -246,12 +246,24 @@ const sfx = {
     tone(sfxOut, t, 160, 0.9, 'triangle', 0.35, 1500);
     hiss(sfxOut, t, 0.9, 'bandpass', 500, 4000, 0.25);
   }),
+  // the jump between galaxies: a long rising roar, then a boom on arrival
+  hyper: effect((t) => {
+    hiss(sfxOut, t, 2.5, 'bandpass', 200, 5000, 0.6);
+    tone(sfxOut, t, 70, 2.5, 'sawtooth', 0.18, 900);
+    tone(sfxOut, t + 2.5, 140, 0.5, 'sine', 0.9, 35);
+    hiss(sfxOut, t + 2.5, 0.6, 'lowpass', 3000, 200, 0.6);
+  }),
   land: effect((t) => {
     hiss(sfxOut, t, 1.6, 'lowpass', 1400, 160, 0.7);
     tone(sfxOut, t + 1.55, 110, 0.25, 'sine', 0.8, 40);
   }),
   takeoff: effect((t) => hiss(sfxOut, t, 1.1, 'lowpass', 160, 1800, 0.7)),
   step: effect((t) => tone(sfxOut, t, 190, 0.04, 'square', 0.06, 140)),
+  // an alien piping up: a low wobble
+  alien: effect((t) => {
+    tone(sfxOut, t, 220, 0.12, 'sawtooth', 0.14, 330);
+    tone(sfxOut, t + 0.11, 330, 0.16, 'sawtooth', 0.14, 180);
+  }),
   // Pip's excited bleeping at a door
   chirp: effect((t) => {
     for (let i = 0; i < 5; i++) tone(sfxOut, t + i * 0.075, 900 + Math.random() * 1600, 0.06, 'square', 0.14, 900 + Math.random() * 1600);

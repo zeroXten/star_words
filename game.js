@@ -6,6 +6,7 @@ const STORE_KEY = 'star-words-v2';
 const DRAG_THRESHOLD = 12;
 const ZONES = 3;
 const WALK_SPEED = 60;
+const HYPERSPACE_MS = 2600;
 const COLLECT_AFTER = 6000; // ms before an untapped crystal collects itself
 
 const $ = (id) => document.getElementById(id);
@@ -36,10 +37,11 @@ function shuffle(list) {
 
 /* ---------- saved progress ---------- */
 
-let store = { crystals: {}, at: null, muted: false };
+let store = { crystals: {}, at: {}, galaxy: 'words', muted: false };
 try {
   store = Object.assign(store, JSON.parse(localStorage.getItem(STORE_KEY)));
 } catch {}
+if (typeof store.at !== 'object' || !store.at) store.at = { words: store.at }; // older saves held one planet
 
 function save() {
   try {
@@ -50,6 +52,12 @@ function save() {
 const crystalsFor = (level) => (store.crystals[level.id] || Array(ZONES).fill(false)).slice();
 
 /* ---------- audio ---------- */
+
+// The clip for a word is its lowercase letters; for a sentence, "s-" and its words joined by dashes.
+function clip(text) {
+  const name = text.toLowerCase();
+  return /\s/.test(text) ? 's-' + name.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : name.replace(/[^a-z]/g, '');
+}
 
 let ctx = null;
 let playing = null;
@@ -101,10 +109,16 @@ async function say(name) {
 /* ---------- screens ---------- */
 
 let data = null;
+
+const GALAXIES = { words: 'Crystal Galaxy', talk: 'Chatter Galaxy' };
+const levelsIn = (galaxy) => (galaxy === 'talk' ? data.talk : data.levels);
+const allLevels = () => [...data.levels, ...data.talk];
+const seedOf = (level) => allLevels().indexOf(level) + 1;
 let cur = 'title';
 let scene = null;
 let round = null;
 let tapExplained = false;
+let talkExplained = false;
 
 // each planet plays its tune in a different key
 const PLANET_KEYS = [0, 2, -3, 5, -2, 3];
@@ -117,17 +131,20 @@ function show(screen) {
   $('back').hidden = !onPlanet;
   $('progress').hidden = screen !== 'play';
   $('label').hidden = screen !== 'planet' && screen !== 'map';
+  // once something on this planet is finished, offer to play it all again
+  $('redo').hidden = screen !== 'planet' || !scene.done.some(Boolean);
   $('total').hidden = screen === 'title' || screen === 'story';
   renderTotal();
   // quiet while words are being read out, soft under the story narration
   if (screen === 'play') setMusic(null);
   else if (screen === 'planet') setMusic('planet', PLANET_KEYS[scene.seed % PLANET_KEYS.length]);
-  else setMusic('map', 0, screen === 'story' ? 0.3 : 1);
+  else setMusic('map', store.galaxy === 'talk' ? 5 : 0, screen === 'story' ? 0.3 : 1);
+  $('hyper').hidden = screen !== 'map';
   if (onPlanet && !raf) raf = requestAnimationFrame(frame);
 }
 
 function renderTotal(bump) {
-  const have = data.levels.reduce((n, level) => n + crystalsFor(level).filter(Boolean).length, 0);
+  const have = allLevels().reduce((n, level) => n + crystalsFor(level).filter(Boolean).length, 0);
   const el = $('total');
   el.innerHTML = `<i class="gem on"></i><span>${have}</span>`;
   if (bump) {
@@ -143,7 +160,7 @@ let flying = false;
 
 // The map is drawn on a 240 x 300 grid; each level's "at" is a spot on it.
 const MAP = { W: 240, H: 300 };
-let galaxy = null;
+const galaxyPictures = {};
 
 function renderMap() {
   scene = null;
@@ -151,14 +168,16 @@ function renderMap() {
   const s = Math.max(3, Math.ceil(innerWidth / MAP.W), Math.ceil(innerHeight / MAP.H));
   box.style.width = MAP.W * s + 'px';
   box.style.height = MAP.H * s + 'px';
-  if (!galaxy) {
-    const byId = Object.fromEntries(data.levels.map((l) => [l.id, l]));
-    galaxy = galaxyPicture(MAP.W, MAP.H, data.levels.filter((l) => l.from).map((l) => [byId[l.from].at, l.at]));
-    galaxy.className = 'galaxy';
-    box.prepend(galaxy);
+  const levels = levelsIn(store.galaxy);
+  if (!galaxyPictures[store.galaxy]) {
+    const byId = Object.fromEntries(levels.map((l) => [l.id, l]));
+    const routes = levels.filter((l) => l.from).map((l) => [byId[l.from].at, l.at]);
+    galaxyPictures[store.galaxy] = galaxyPicture(MAP.W, MAP.H, routes, GALAXY_LOOKS[store.galaxy]);
+    galaxyPictures[store.galaxy].className = 'galaxy';
   }
-  box.querySelectorAll('.planet').forEach((n) => n.remove());
-  data.levels.forEach((level, i) => {
+  box.querySelectorAll('.planet, .galaxy').forEach((n) => n.remove());
+  box.prepend(galaxyPictures[store.galaxy]);
+  levels.forEach((level, i) => {
     const got = crystalsFor(level);
     const size = (20 + ((i * 5) % 9)) * s;
     const btn = document.createElement('button');
@@ -166,7 +185,7 @@ function renderMap() {
     btn.dataset.id = level.id;
     btn.style.left = level.at[0] * s + 'px';
     btn.style.top = level.at[1] * s - size / 2 + 'px';
-    const globe = planetSprite(ENVS[level.env], i + 1);
+    const globe = planetSprite(ENVS[level.env], seedOf(level));
     globe.className = 'globe';
     globe.style.width = globe.style.height = size + 'px';
     btn.append(globe);
@@ -178,9 +197,12 @@ function renderMap() {
     btn.addEventListener('click', () => flyTo(level, btn));
     box.append(btn);
   });
-  $('label').textContent = 'Galaxy map';
+  $('label').textContent = GALAXIES[store.galaxy];
+  const other = store.galaxy === 'talk' ? 'words' : 'talk';
+  $('hyper').textContent = 'To the ' + GALAXIES[other];
+  $('hyper').onclick = () => hyperspace(other);
   show('map');
-  const here = box.querySelector(`[data-id="${store.at}"]`) || box.querySelector('.planet');
+  const here = box.querySelector(`[data-id="${store.at[store.galaxy]}"]`) || box.querySelector('.planet');
   moveShip(here, false);
   $('map').scrollTo(here.offsetLeft - $('map').clientWidth / 2, here.offsetTop - $('map').clientHeight / 2 + 40);
 }
@@ -196,19 +218,52 @@ function flyTo(level, btn) {
   if (flying) return;
   unlockAudio();
   flying = true;
-  const already = store.at === level.id;
+  const already = store.at[store.galaxy] === level.id;
   if (!already) sfx.fly();
   moveShip(btn, true);
-  store.at = level.id;
+  store.at[store.galaxy] = level.id;
   save();
   setTimeout(() => zoomInto(level, btn), already ? 150 : 1000);
+}
+
+// The jump between galaxies: stars stretch into streaks, the screen whites out, and you arrive.
+function hyperspace(to) {
+  if (flying) return;
+  unlockAudio();
+  flying = true;
+  setMusic(null);
+  sfx.hyper();
+  const warp = $('warp');
+  const sky = document.createElement('canvas');
+  sky.width = view.W;
+  sky.height = view.H;
+  sky.className = 'hyperspace';
+  const g = sky.getContext('2d');
+  warp.style.background = '#05060f';
+  warp.style.opacity = 1;
+  warp.replaceChildren(sky);
+  warp.hidden = false;
+  const began = performance.now();
+  (function tick(now) {
+    const p = Math.min(1, (now - began) / HYPERSPACE_MS);
+    drawHyperspace(g, view.W, view.H, p);
+    if (p < 1) return requestAnimationFrame(tick);
+    store.galaxy = to;
+    save();
+    flying = false;
+    renderMap();
+    warp.style.background = '#ffffff';
+    warp.replaceChildren();
+    warp.style.opacity = 0;
+    setTimeout(() => (warp.hidden = true), 450);
+  })(began);
 }
 
 // The planet swells to fill the screen, then gives way to its sky as the ship comes in to land.
 function zoomInto(level, btn) {
   const from = btn.querySelector('.globe').getBoundingClientRect();
   const warp = $('warp');
-  const globe = planetSprite(ENVS[level.env], data.levels.indexOf(level) + 1);
+  const globe = planetSprite(ENVS[level.env], seedOf(level));
   Object.assign(globe.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
   warp.style.background = 'transparent';
   warp.style.opacity = 1;
@@ -254,7 +309,7 @@ function enterPlanet(level) {
   scene = {
     level,
     env: ENVS[level.env],
-    seed: data.levels.indexOf(level) + 1,
+    seed: seedOf(level),
     shipX: 40,
     // where the ship can set down: on arrival, and past the last door to collect Nova
     pads: [40, 470],
@@ -267,6 +322,8 @@ function enterPlanet(level) {
     goal: null,
     cam: 0,
     groundY: 0,
+    // which places are finished. A planet that's already complete starts afresh, so it can be played again.
+    done: crystalsFor(level).every(Boolean) ? Array(ZONES).fill(false) : crystalsFor(level),
     // the ship's descent: 0 is high above, 1 is on the ground
     phase: 'landing',
     altitude: 0,
@@ -312,7 +369,7 @@ function frame(now) {
     sc.pipX += (sc.heroX - sc.facing * 15 - sc.pipX) * Math.min(1, dt * 4);
     sc.groundY = view.H - Math.max(24, Math.round(view.H * 0.28));
     sc.cam = view.W >= sc.worldW ? (sc.worldW - view.W) / 2 : clamp(sc.heroX - view.W / 2, 0, sc.worldW - view.W);
-    drawScene(g2d, view.W, view.H, sc, now / 1000, crystalsFor(sc.level));
+    drawScene(g2d, view.W, view.H, sc, now / 1000, sc.done);
   }
   raf = requestAnimationFrame(frame);
 }
@@ -345,7 +402,7 @@ canvas.addEventListener('pointerdown', (e) => {
   unlockAudio();
   const x = e.clientX / view.k + scene.cam;
   // a door that has already given up its crystal is just scenery
-  const got = crystalsFor(scene.level);
+  const got = scene.done;
   let place = scene.places.findIndex((p, i) => !got[i] && Math.abs(x - p) < 22);
   // the yellow arrow at the screen edge means "next door is that way": tapping it goes all the way there
   const next = got.indexOf(false);
@@ -365,6 +422,16 @@ canvas.addEventListener('pointerdown', (e) => {
   } else {
     scene.goal = null;
     scene.target = clamp(x, 10, scene.worldW - 10);
+    // an unfinished door or alien on the way stops her there instead of letting her walk past
+    const dir = Math.sign(scene.target - scene.heroX);
+    const onTheWay = scene.places
+      .map((p, i) => ({ i, stop: p - 16 }))
+      .filter(({ i, stop }) => !got[i] && (stop - scene.heroX) * dir > 1 && (scene.target - stop) * dir >= 0)
+      .sort((a, b) => (a.stop - b.stop) * dir)[0];
+    if (onTheWay) {
+      scene.goal = onTheWay.i;
+      scene.target = onTheWay.stop;
+    }
   }
 });
 
@@ -390,22 +457,35 @@ function formatFor(level, zone) {
 
 function startZone(zone) {
   scene.facing = 1;
-  const questions = shuffle(zoneWords(scene.level, zone));
+  // on a chatter planet this is a conversation with an alien, taken in order
+  const alien = scene.level.aliens && scene.level.aliens[zone];
+  const questions = alien ? alien.lines.map((line) => line.say) : shuffle(zoneWords(scene.level, zone));
   // Deal the right answer's position evenly (left, middle, right) so it can't keep landing in one spot.
   const slots = questions.flatMap((_, i) => (i % 3 ? [] : shuffle([0, 1, 2])));
-  const mine = (round = { zone, format: formatFor(scene.level, zone), questions, slots, index: 0, results: [] });
+  const format = alien ? 'talk' : formatFor(scene.level, zone);
+  const mine = (round = { zone, format, alien, questions, slots, index: 0, results: [] });
   show('play');
   showQuestion();
   sfx.chirp();
-  sleep(500)
-    .then(() => cur === 'play' && round === mine && say('_door_' + mine.format))
-    .then(() => sayWord(mine, 0));
+  // the talking instructions are long, so they're only given once per visit
+  const explain = format !== 'talk' || !talkExplained;
+  if (format === 'talk') talkExplained = true;
+  const intro = sleep(500).then(() => explain && cur === 'play' && round === mine && say('_door_' + format));
+  intro.then(() => sayWord(mine, 0));
 }
 
-// Reads the current word aloud, unless the player has already moved on.
+// What Pip says out loud for the current question: the word itself in most games,
+// nothing in the drag game (the word is only written), and Pip's side of a conversation.
+function prompt(r) {
+  if (r.format === 'listen') return null;
+  return clip(r.format === 'talk' ? r.alien.lines[r.index].pip : r.answer);
+}
+
+// Says it, unless the player has already moved on.
 function sayWord(r, index) {
-  if (cur !== 'play' || round !== r || r.index !== index || r.locked || r.format === 'listen') return;
-  return say(r.answer.toLowerCase());
+  if (r.format === 'talk') return; // Pip's line is read by tapping, not spoken
+  if (cur !== 'play' || round !== r || r.index !== index || r.locked || !prompt(r)) return;
+  return say(prompt(r));
 }
 
 function renderProgress() {
@@ -421,17 +501,88 @@ function showQuestion() {
   const [answer, ...others] = round.questions[round.index];
   Object.assign(round, { answer, firstTry: true, locked: false });
   renderProgress();
-  load(answer.toLowerCase());
+  load(clip(answer));
 
   $('play').dataset.format = round.format;
   $('hear').hidden = round.format === 'listen';
   $('word').className = 'word';
   $('options').innerHTML = '';
+  $('options').classList.remove('dragged');
   GAMES[round.format](answer, others);
 
   const mine = round;
   const index = round.index;
   if (index > 0) sleep(300).then(() => sayWord(mine, index));
+}
+
+// A speech bubble: who is talking, and their sentence with every word tappable to hear it.
+function showBubble(who, picture, sentence) {
+  const bubble = $('word');
+  bubble.className = 'word sentence';
+  bubble.innerHTML = '';
+  $('zone').dataset.who = who;
+  picture.className = 'who';
+  const line = document.createElement('div');
+  line.className = 'line';
+  for (const word of sentence.split(' ')) {
+    load(clip(word));
+    const w = document.createElement('button');
+    w.className = 'w';
+    w.textContent = word;
+    w.addEventListener('click', () => {
+      if (!round || round.locked || w.classList.contains('later')) return;
+      say(clip(word));
+      light(w, 900);
+    });
+    line.append(w);
+  }
+  bubble.append(picture, line);
+  return [...line.children];
+}
+
+// Draws the eye to the word that should be tapped next.
+function nudge(el) {
+  el.classList.remove('nudge');
+  void el.offsetWidth;
+  el.classList.add('nudge');
+}
+
+function light(el, ms) {
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), ms);
+}
+
+// The shortcut for Pip's turn (the Pip button): the whole line is read aloud with each word
+// lighting up roughly as it's said, then the alien answers. Timed from the clip's length, so it carries on even if
+// the speech is cut short by a tap.
+async function pipTurn(r, index) {
+  const current = () => cur === 'play' && round === r && r.index === index && !r.locked && !r.replied;
+  if (!current()) return;
+  const buffer = await load(prompt(r));
+  if (!current()) return;
+  const ms = buffer ? buffer.duration * 1000 : 1500;
+  const words = [...document.querySelectorAll('#word .w')];
+  const letters = words.reduce((n, w) => n + w.textContent.length + 1, 0);
+  let at = 0;
+  for (const w of words) {
+    const share = ((w.textContent.length + 1) / letters) * ms;
+    setTimeout(() => current() && w.isConnected && light(w, share), at);
+    at += share;
+  }
+  say(prompt(r));
+  setTimeout(() => current() && reply(r), ms + 700);
+}
+
+function reply(r) {
+  r.replied = true;
+  const picture = alienSprite(r.alien).cloneNode();
+  picture.getContext('2d').drawImage(alienSprite(r.alien), 0, 0);
+  showBubble('alien', picture, r.answer);
+  $('zone').classList.remove('arrive');
+  void $('zone').offsetWidth;
+  $('zone').classList.add('arrive');
+  sfx.alien();
+  for (const choice of dealChoices(r.answer, r.questions[r.index].slice(1))) $('options').append(makeDisc(choice));
 }
 
 function showTiles(letters) {
@@ -461,9 +612,37 @@ const GAMES = {
   listen(answer, others) {
     showTiles([...answer]);
     for (const choice of dealChoices(answer, others)) {
-      load(choice.toLowerCase());
+      load(clip(choice));
       $('options').append(makeDisc(choice));
     }
+  },
+
+  // A conversation. Pip's line is written but not spoken: she reads it by tapping each word
+  // in turn to hear it. After the last word the alien's written reply takes its place, with
+  // three spoken sentences to choose from. (The Pip button reads the whole line instead.)
+  talk(answer, others) {
+    const r = round;
+    const index = round.index;
+    r.replied = false;
+    const words = showBubble('pip', sprite(PIP), r.alien.lines[index].pip);
+    load(prompt(r));
+    for (const choice of [answer, ...others]) load(clip(choice));
+
+    let upTo = 0;
+    words.forEach((w, i) => w.classList.add(i ? 'later' : 'next'));
+    words.forEach((w, i) =>
+      w.addEventListener('click', () => {
+        if (round !== r || r.replied || r.locked) return;
+        if (i > upTo) return nudge(words[upTo]);
+        if (i < upTo) return;
+        w.classList.replace('next', 'read');
+        if (++upTo < words.length) return words[upTo].classList.replace('later', 'next');
+        // that was the last word: let it finish being said, then the alien answers
+        load(clip(w.textContent)).then((buffer) =>
+          setTimeout(() => cur === 'play' && round === r && r.index === index && !r.replied && reply(r), (buffer ? buffer.duration * 1000 : 600) + 500)
+        );
+      })
+    );
   },
 
   // the word is spoken; three written words, tap the right one
@@ -560,6 +739,7 @@ window.addEventListener('pointermove', (e) => {
   const dy = e.clientY - drag.y;
   if (!drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
   drag.moved = true;
+  $('options').classList.add('dragged'); // she's got the idea: put the hint arrows away
   drag.disc.classList.add('dragging');
   drag.disc.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;
   $('zone').classList.toggle('over', overZone(drag.disc));
@@ -588,7 +768,7 @@ function overZone(disc) {
 async function listen(disc, choice) {
   document.querySelectorAll('.disc.speaking').forEach((d) => d.classList.remove('speaking'));
   disc.classList.add('speaking');
-  await say(choice.toLowerCase());
+  await say(clip(choice));
   disc.classList.remove('speaking');
 }
 
@@ -615,7 +795,7 @@ function miss(el, rule) {
   sfx.wrong();
   sleep(450)
     .then(() => round === mine && round.index === index && !round.locked && say(nextPhrase('_retry')))
-    .then((spoke) => spoke !== false && sayWord(mine, index));
+    .then((spoke) => spoke !== false && mine.format !== 'talk' && sayWord(mine, index));
 }
 
 // Little squares flying outwards from a point.
@@ -682,11 +862,10 @@ async function win() {
   sfx.correct();
   await sleep(400);
 
+  // Pip reads the answer back. In a conversation, praise waits for the final line so the chat keeps moving.
+  const praise = round.format !== 'talk' || round.index === round.questions.length - 1;
   // The timeout keeps the game moving even if a clip fails to play.
-  await Promise.race([
-    say(round.answer.toLowerCase()).then(() => say(nextPhrase('_praise'))),
-    sleep(5000),
-  ]);
+  await Promise.race([say(clip(round.answer)).then(() => praise && say(nextPhrase('_praise'))), sleep(8000)]);
   await sleep(500);
   if (round !== mine || cur !== 'play') return;
 
@@ -698,11 +877,11 @@ async function win() {
 async function finishZone() {
   const level = scene.level;
   const got = crystalsFor(level);
-  const wasComplete = got.every(Boolean);
   got[round.zone] = true;
   store.crystals[level.id] = got;
   save();
-  const planetDone = got.every(Boolean) && !wasComplete;
+  scene.done[round.zone] = true;
+  const planetDone = scene.done.every(Boolean);
 
   // The crystal appears and waits to be tapped; after a few seconds it collects itself.
   const art = $('reward-art');
@@ -796,6 +975,16 @@ $('go').addEventListener('click', () => {
   renderMap();
 });
 
+// Closes this planet's doors again (or resets its aliens) so everything can be replayed.
+// Crystals already earned are kept.
+$('redo').addEventListener('click', () => {
+  if (cur !== 'planet' || !scene || scene.phase) return;
+  sfx.click();
+  scene.done = Array(ZONES).fill(false);
+  scene.goal = scene.target = null;
+  $('redo').hidden = true;
+});
+
 $('mute').addEventListener('click', () => {
   unlockAudio();
   store.muted = !store.muted;
@@ -807,7 +996,8 @@ $('mute').addEventListener('click', () => {
 $('hear').addEventListener('click', () => {
   if (!round || round.locked) return;
   unlockAudio();
-  say(round.answer.toLowerCase());
+  if (round.format === 'talk' && !round.replied) return pipTurn(round, round.index);
+  if (prompt(round)) say(prompt(round));
 });
 
 document.addEventListener('pointerdown', () => unlockAudio(), true);

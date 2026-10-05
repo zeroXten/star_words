@@ -4,7 +4,7 @@
 Uses the macOS `say` and `afconvert` commands. Existing files are skipped,
 so after editing words.json just run it again; pass --force to redo them all.
 
-    python3 tools/make_audio.py [--voice "Serena (Premium)"] [--force]
+    python3 tools/make_audio.py [--voice "Serena (Premium)"] [--force] [--prune]
 
 Without --voice it picks the best British voice installed: Premium, then
 Enhanced, then plain Daniel. Better voices are a free download in System
@@ -12,12 +12,18 @@ Settings > Accessibility > Spoken Content > System Voice > Manage Voices.
 """
 import argparse
 import json
+import re
 import subprocess
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "audio"
+
+
+def sentence_clip(text):
+    """File name for a spoken sentence; game.js builds the same name."""
+    return "s-" + re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
 def best_voice():
@@ -35,6 +41,7 @@ def main():
     ap.add_argument("--voice", default=best_voice())
     ap.add_argument("--rate", default="160", help="words per minute")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--prune", action="store_true", help="delete clips that words.json no longer uses")
     args = ap.parse_args()
 
     print("voice:", args.voice)
@@ -44,6 +51,18 @@ def main():
         for group in level["words"]:
             for word in group:
                 clips[word.lower()] = word
+
+    # conversations: every sentence, plus each word of Pip's line and the alien's reply so it can be tapped
+    for planet in data.get("talk", []):
+        for alien in planet["aliens"]:
+            for line in alien["lines"]:
+                for sentence in [line["pip"], *line["say"]]:
+                    clips[sentence_clip(sentence)] = sentence
+                for word in (line["pip"] + " " + line["say"][0]).split():
+                    word = re.sub(r"[^A-Za-z']", "", word)
+                    if len(word) == 1:
+                        word = word.lower()  # a lone capital is read out as "capital A"
+                    clips.setdefault(re.sub(r"[^a-z]", "", word.lower()), word)
 
     OUT.mkdir(exist_ok=True)
     made = 0
@@ -59,8 +78,12 @@ def main():
 
     stale = sorted(p.name for p in OUT.glob("*.m4a") if p.stem not in clips)
     print(f"{made} generated, {len(clips) - made} already present")
-    if stale:
-        print("no longer used:", ", ".join(stale))
+    if stale and args.prune:
+        for name in stale:
+            (OUT / name).unlink()
+        print(len(stale), "unused clips deleted")
+    elif stale:
+        print("no longer used (run with --prune to delete):", ", ".join(stale))
 
 
 if __name__ == "__main__":

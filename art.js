@@ -40,17 +40,19 @@ const HERO_STEP = HERO_HEAD.concat([
   '..kkkkk....kkkkk',
 ]);
 
+// A boxy little robot: square blue head, yellow eyes, grey body with arms.
 const PIP = [
-  '.....r......',
-  '.....k......',
-  '...kkkkkk...',
-  '..kwwwwwwk..',
-  '.kwwwcccwwk.',
-  '.kwwwcCcwwk.',
-  '.kgwwcccwgk.',
-  '.kkkkkkkkkk.',
-  '..kgooggok..',
-  '..kggggggk..',
+  '.....yy.....',
+  '.....kk.....',
+  '..kkkkkkkk..',
+  '.kcccccccck.',
+  '.kcyyccyyck.',
+  '.kcykccykck.',
+  '.kcccccccck.',
+  '..kkkkkkkk..',
+  'kgkggggggkgk',
+  'kgkgoyoygkgk',
+  '.kkggggggkk.',
   '...kkkkkk...',
 ];
 
@@ -84,15 +86,15 @@ const SHIP = [
   '.....kkkkk......kkkkk.......',
 ];
 
-function sprite(rows) {
+function sprite(rows, pal = PAL) {
   const c = document.createElement('canvas');
   c.width = Math.max(...rows.map((r) => r.length));
   c.height = rows.length;
   const g = c.getContext('2d');
   rows.forEach((row, y) =>
     [...row].forEach((ch, x) => {
-      if (!PAL[ch]) return;
-      g.fillStyle = PAL[ch];
+      if (!pal[ch]) return;
+      g.fillStyle = pal[ch];
       g.fillRect(x, y, 1, 1);
     })
   );
@@ -105,6 +107,191 @@ const SPR = {
   crystal: sprite(CRYSTAL),
   ship: sprite(SHIP),
 };
+
+/* ---------- aliens ----------
+   In these, a = main colour, b = its shade, y = accent (eyes, lights); the
+   three are set per alien, so one shape can be several different characters. */
+
+const ALIEN_SHAPES = {
+  blob: [
+    '...y......y...',
+    '...k......k...',
+    '....k....k....',
+    '...kkkkkkkk...',
+    '..kaaaaaaaak..',
+    '.kaawwaawwaak.',
+    '.kaawkaawkaak.',
+    '.kaaaaaaaaaak.',
+    '.kaaakkkkaaak.',
+    '.kaaaaaaaaaak.',
+    '..kaaaaaaaak..',
+    '..kabaaaabak..',
+    '.kaak.kk.kaak.',
+    '.kak..kk..kak.',
+    '.kk........kk.',
+  ],
+  robot: [
+    '......y.......',
+    '......k.......',
+    '...kkkkkkkk...',
+    '...kaaaaaak...',
+    '...kayaayak...',
+    '...kaaaaaak...',
+    '...kabbbbak...',
+    '...kkkkkkkk...',
+    '.kkkaaaaaakkk.',
+    '.kakaaaaaakak.',
+    '.kakayyyaakak.',
+    '.kakaaaaaakak.',
+    '.kkkaaaaaakkk.',
+    '...kkkkkkkk...',
+    '...kak..kak...',
+    '...kak..kak...',
+    '..kkkk..kkkk..',
+  ],
+  monster: [
+    '.kk..........kk.',
+    '.kwk........kwk.',
+    '..kwkkkkkkkkwk..',
+    '..kaaaaaaaaaak..',
+    '.kaaaaaaaaaaaak.',
+    '.kaawwaaaawwaak.',
+    '.kaawkaaaakwaak.',
+    '.kaaaaaaaaaaaak.',
+    '.kaakwkwkwkwaak.',
+    '.kaakkkkkkkkaak.',
+    '.kaaaaaaaaaaaak.',
+    'kaaaaaaaaaaaaaak',
+    'kabaaaaaaaaaabak',
+    'kaakaaaaaaaakaak',
+    '.kk.kaaaaaak.kk.',
+    '....kaak.kaak...',
+    '...kbbbk.kbbbk..',
+    '...kkkkk.kkkkk..',
+  ],
+  hood: [
+    '....kkkk....',
+    '...kaaaak...',
+    '..kaaaaaak..',
+    '..kakkkkak..',
+    '..kakyykak..',
+    '..kakkkkak..',
+    '..kaakkaak..',
+    '.kaaaaaaaak.',
+    '.kaaaaaaaak.',
+    'kaabaaaabaak',
+    'kakbaaaabkak',
+    'kk.kaaaak.kk',
+    '...kaaaak...',
+    '...kaaaak...',
+    '..kaaaaaak..',
+    '..kaaaaaak..',
+    '.kaaaaaaaak.',
+    '.kkkkkkkkkk.',
+  ],
+  slug: [
+    '.....kkkkkk.........',
+    '...kkaaaaaakk.......',
+    '..kaaaaaaaaaak......',
+    '.kaawwaaawwaaak.....',
+    '.kaawkaaawkaaak.....',
+    '.kaaaaaaaaaaaak.....',
+    '.kaakkkkkkkaaak.....',
+    'kaaaaaaaaaaaaaakk...',
+    'kaabbbbbbbbaaaaaakk.',
+    'kaaaaaaaaaaaaaaaaaak',
+    'kabbbbbbbbbbbaaaaaak',
+    '.kaaaaaaaaaaaaaaaak.',
+    '..kkkkkkkkkkkkkkkk..',
+  ],
+  guard: [
+    '...kkkkkk...',
+    '..kaaaaaak..',
+    '.kaaaaaaaak.',
+    '.kakkkkkkak.',
+    '.kaaakkaaak.',
+    '.kaakaakaak.',
+    '..kaaaaaak..',
+    '..kkkkkkkk..',
+    '.kaaaaaaaak.',
+    'kaakaaaakaak',
+    'kakkayyakkak',
+    'kakkaaaakkak',
+    'kkkkaaaakkkk',
+    '...kkkkkk...',
+    '...kakkak...',
+    '...kakkak...',
+    '...kakkak...',
+    '..kkakkakk..',
+    '..kkkk.kkkk.',
+  ],
+  tall: [
+    '..kkkkkk..',
+    '.kaaaaaak.',
+    'kaaaaaaaak',
+    'kakkaakkak',
+    'kakkaakkak',
+    'kaaaaaaaak',
+    '.kaakkaak.',
+    '..kaaaak..',
+    '...kaak...',
+    '...kaak...',
+    '..kaaaak..',
+    '.kaaaaaak.',
+    '.kakaakak.',
+    '.kakaakak.',
+    '.kakaakak.',
+    '..kaaaak..',
+    '..kakkak..',
+    '..kakkak..',
+    '.kkak.kakk',
+  ],
+  squid: [
+    '....kkkkkk....',
+    '..kkaaaaaakk..',
+    '.kaaaaaaaaaak.',
+    '.kaawwaawwaak.',
+    '.kaawkaakwaak.',
+    '.kaaaaaaaaaak.',
+    '.kaaaaaaaaaak.',
+    '..kaaaaaaaak..',
+    '..kakakakaak..',
+    '.kak.kak.kak..',
+    '.kak.kak.kak..',
+    '.kbk.kbk.kbk..',
+    '..k...k...k...',
+  ],
+};
+
+const alienSprites = new Map();
+function alienSprite(alien) {
+  if (!alienSprites.has(alien)) {
+    const [a, b, y] = alien.colours;
+    alienSprites.set(alien, sprite(ALIEN_SHAPES[alien.shape], { k: PAL.k, w: PAL.w, a, b, y }));
+  }
+  return alienSprites.get(alien);
+}
+
+// `beat` staggers the bobbing between characters; it must not change as the view scrolls
+function drawAlien(g, x, y, spr, done, isNext, t, beat) {
+  // bobs gently while waiting; hops about once you've talked
+  const lift = done ? Math.round(Math.abs(Math.sin(t * 5 + beat)) * 4) : Math.floor(t * 2 + beat) % 2;
+  const top = y - spr.height - lift;
+  blit(g, spr, x - Math.floor(spr.width / 2), top);
+  if (!done) {
+    // a speech bubble: it has something to say
+    rect(g, PAL.k, x - 7, top - 13, 15, 10);
+    rect(g, '#ffffff', x - 6, top - 12, 13, 8);
+    rect(g, PAL.k, x - 2, top - 3, 3, 2);
+    rect(g, '#ffffff', x - 1, top - 4, 1, 2);
+    for (let i = 0; i < 3; i++) rect(g, Math.floor(t * 3) % 3 === i ? '#3b6fd9' : PAL.k, x - 4 + i * 4, top - 9, 1, 2);
+  }
+  if (isNext) {
+    const ay = top - 26 + Math.round(Math.sin(t * 5) * 2);
+    for (let r = 0; r < 4; r++) rect(g, '#ffe81f', x - 3 + r, ay + r, 7 - 2 * r, 1);
+    rect(g, '#ffe81f', x - 1, ay - 3, 3, 3);
+  }
+}
 
 /* ---------- helpers ---------- */
 
@@ -194,6 +381,14 @@ const ENVS = {
   },
 };
 
+// The second galaxy's planets: familiar landscapes under stranger skies.
+Object.assign(ENVS, {
+  swamp: { ...ENVS.jungle, sky: ['#2a1244', '#5b2a7a', '#a05aa8', '#e8a8c8'], sun: '#ffd9f5', ground: '#4a9a6a', dark: '#2a6a4a', deco: ['mushroom', 'tree', 'bush', 'mushroom'] },
+  dusk: { ...ENVS.desert, sky: ['#1a1040', '#5a2a6a', '#d8605a', '#f7b267'], stars: true, sun: '#ffd9a0', ground: '#e0b070', dark: '#a87840' },
+  aurora: { ...ENVS.ice, sky: ['#06122a', '#0f3a4a', '#1f7a6a', '#7fe0b0'], stars: true, sun: '#eafff5' },
+  redmoon: { ...ENVS.moon, sun: '#e0603a', far: ['craters', '#5a3a40'], mid: ['craters', '#8a6058'], ground: '#b08a80', dark: '#7a5a55', stone: '#e0c8c0' },
+});
+
 function hill(type, x, seed) {
   switch (type) {
     case 'dunes': return 12 + 7 * Math.sin(x * 0.021 + seed) + 3 * Math.sin(x * 0.053 + seed * 2);
@@ -281,7 +476,7 @@ const DECO = {
   },
 };
 
-function drawDoor(g, x, y, env, done, isNext, t) {
+function drawDoor(g, x, y, env, done, isNext, t, beat) {
   const stone = env.stone;
   rect(g, stone, x - 11, y - 24, 22, 24);
   rect(g, shade(stone, 0.75), x + 7, y - 24, 4, 24);
@@ -290,7 +485,7 @@ function drawDoor(g, x, y, env, done, isNext, t) {
   rect(g, shade(stone, 0.55), x - 8, y - 20, 16, 20);
   if (done) {
     rect(g, '#05060f', x - 7, y - 19, 14, 19);
-    blit(g, SPR.crystal, x - 4, y - 44 + Math.sin(t * 3 + x) * 2);
+    blit(g, SPR.crystal, x - 4, y - 44 + Math.sin(t * 3 + beat) * 2);
   } else {
     const glow = Math.floor(t * 3) % 2 ? '#6fe3ff' : '#b8f3ff';
     rect(g, '#0c2244', x - 7, y - 19, 14, 19);
@@ -370,7 +565,11 @@ function drawScene(g, W, H, sc, t, crystals) {
 
   const next = crystals.indexOf(false);
   const idle = sc.target == null && !sc.phase;
-  sc.places.forEach((p, i) => drawDoor(g, p - cam, gy + 1, env, crystals[i], i === next && idle, t));
+  sc.places.forEach((p, i) => {
+    const pointed = i === next && idle;
+    if (sc.level.aliens) drawAlien(g, p - cam, gy + 1, alienSprite(sc.level.aliens[i]), crystals[i], pointed, t, i);
+    else drawDoor(g, p - cam, gy + 1, env, crystals[i], pointed, t, i);
+  });
 
   // the next door is off-screen: point the way
   if (next >= 0 && idle) {
@@ -384,7 +583,7 @@ function drawScene(g, W, H, sc, t, crystals) {
 
   const bob = Math.round(Math.sin(t * 4) * 2);
   blit(g, SPR.pip, sc.pipX - 6 - cam, gy - 27 + bob, sc.facing < 0);
-  rect(g, Math.floor(t * 12) % 2 ? '#8ff0ff' : '#5fd6ff', sc.pipX - 2 - cam, gy - 16 + bob, 4, 2);
+  rect(g, Math.floor(t * 12) % 2 ? '#8ff0ff' : '#5fd6ff', sc.pipX - 2 - cam, gy - 15 + bob, 4, 2);
 
   const step = sc.target != null && Math.floor(t * 7) % 2 ? 1 : 0;
   blit(g, SPR.hero[step], sc.heroX - 8 - cam, gy - 18, sc.facing < 0);
@@ -421,7 +620,7 @@ function castPicture() {
   blit(g, SPR.ship, 0, 10);
   blit(g, SPR.hero[0], 32, 5);
   blit(g, SPR.pip, 49, 2);
-  rect(g, '#5fd6ff', 53, 13, 4, 2);
+  rect(g, '#5fd6ff', 53, 14, 4, 2);
   return c;
 }
 
@@ -442,39 +641,56 @@ function smoothNoise(x, y, size, seed) {
   return top + (bottom - top) * sy;
 }
 
+const GALAXY_LOOKS = {
+  // blue and purple spiral with a golden core
+  words: {
+    clouds: [['#05060f', '#0f0d2e', '#1c1450', '#2e1a6b'], ['#05060f', '#081a33', '#0c2c4f', '#124368']],
+    core: ['#fff3c9', '#c9a9ff', '#5a3fa8'],
+    inner: ['#fff6c9', '#ffd27a', '#ffffff'],
+    outer: ['#cfe6ff', '#8fb2ff', '#4a5aa8', '#4a5aa8'],
+    arms: 2, twist: 0.042, squash: 0.85,
+  },
+  // green and amber, four tight arms, a hot pink core
+  talk: {
+    clouds: [['#060a06', '#0f2416', '#1a4226', '#2a6234'], ['#0a0603', '#2a1506', '#52260a', '#80400c']],
+    core: ['#ffffff', '#ff9ad8', '#b0308a'],
+    inner: ['#ffe0f4', '#ff9ad8', '#ffffff'],
+    outer: ['#d8ffc8', '#9fe07a', '#4a8a3a', '#e0a040'],
+    arms: 4, twist: 0.075, squash: 0.6,
+  },
+};
+
 // routes: pairs of [x, y] points to join with dotted lines
-function galaxyPicture(W, H, routes) {
+function galaxyPicture(W, H, routes, look) {
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;
   const g = c.getContext('2d');
   const cx = W / 2;
   const cy = H / 2;
-  const purple = ['#05060f', '#0f0d2e', '#1c1450', '#2e1a6b'];
-  const teal = ['#05060f', '#081a33', '#0c2c4f', '#124368'];
+  const [purple, teal] = look.clouds;
 
   // dithered nebula clouds, brightest around the middle
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const dither = BAYER[(y % 4) * 4 + (x % 4)] / 16;
-      const d = Math.hypot(x - cx, (y - cy) * 0.85);
+      const d = Math.hypot(x - cx, (y - cy) / look.squash * 0.72);
       const cloud = 0.6 * smoothNoise(x, y, 48, 1) + 0.4 * smoothNoise(x, y, 19, 2);
       const level = clampInt((cloud * 0.8 + Math.max(0, 1 - d / 95) * 0.45) * 4 - 1.3 + dither, 0, 3);
       const core = 1.5 - d / 16 + dither * 0.5;
-      g.fillStyle = core > 1.25 ? '#fff3c9' : core > 1 ? '#c9a9ff' : core > 0.7 ? '#5a3fa8' : (smoothNoise(x, y, 60, 9) > 0.55 ? teal : purple)[level];
+      g.fillStyle = core > 1.25 ? look.core[0] : core > 1 ? look.core[1] : core > 0.7 ? look.core[2] : (smoothNoise(x, y, 60, 9) > 0.55 ? teal : purple)[level];
       g.fillRect(x, y, 1, 1);
     }
   }
 
   // two spiral arms of stars
-  const inner = ['#fff6c9', '#ffd27a', '#ffffff'];
-  const outer = ['#cfe6ff', '#8fb2ff', '#4a5aa8', '#4a5aa8'];
+  const { inner, outer } = look;
   for (let i = 0; i < 1500; i++) {
     const r = Math.pow(hash(i), 0.7) * 140;
     const spread = (hash(i + 0.3) + hash(i + 0.6) + hash(i + 0.9) - 1.5) * 0.7;
-    const a = r * 0.042 + (i % 2) * Math.PI + spread;
+    const a = r * look.twist + ((i % look.arms) / look.arms) * Math.PI * 2 + spread;
     const tones = r < 45 ? inner : outer;
-    rect(g, tones[Math.floor(hash(i + 0.5) * tones.length)], cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.85, 1, 1);
+    rect(g, tones[Math.floor(hash(i + 0.5) * tones.length)], cx + Math.cos(a) * r, cy + Math.sin(a) * r * look.squash, 1, 1);
   }
   for (let i = 0; i < 260; i++) rect(g, hash(i + 7.7) > 0.8 ? '#ffffff' : '#6f7fc0', hash(i * 1.3) * W, hash(i * 2.9) * H, 1, 1);
 
@@ -492,4 +708,29 @@ function galaxyPicture(W, H, routes) {
 
 function clampInt(v, lo, hi) {
   return Math.max(lo, Math.min(hi, Math.floor(v)));
+}
+
+/* ---------- hyperspace ---------- */
+
+// One frame of the jump between galaxies; p runs from 0 to 1.
+function drawHyperspace(g, W, H, p) {
+  const cx = W / 2;
+  const cy = H / 2;
+  const far = Math.hypot(cx, cy);
+  const rush = p * p;
+  rect(g, '#05060f', 0, 0, W, H);
+  for (let i = 0; i < 150; i++) {
+    const angle = hash(i) * Math.PI * 2;
+    const speed = 0.5 + hash(i + 0.2);
+    const head = ((2 + hash(i + 0.5) * far + p * 40 * speed + rush * far * 3 * speed) % far) + 2;
+    const tail = 1 + rush * 70 * speed;
+    const color = i % 5 ? '#ffffff' : i % 2 ? '#9fd8ff' : '#c9a9ff';
+    for (let r = Math.max(2, head - tail); r <= head; r += 1) rect(g, color, cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, 1, 1);
+  }
+  // the screen whites out as it arrives
+  if (p > 0.82) {
+    g.globalAlpha = (p - 0.82) / 0.18;
+    rect(g, '#ffffff', 0, 0, W, H);
+    g.globalAlpha = 1;
+  }
 }
