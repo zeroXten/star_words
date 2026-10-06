@@ -52,13 +52,12 @@ def main():
             for word in group:
                 clips[word.lower()] = word
 
-    # conversations: every sentence, plus each word of Pip's line and the alien's reply so it can be tapped
-    for planet in data.get("talk", []):
-        for alien in planet["aliens"]:
-            for line in alien["lines"]:
-                for sentence in [line["pip"], *line["say"]]:
-                    clips[sentence_clip(sentence)] = sentence
-                for word in (line["pip"] + " " + line["say"][0]).split():
+    # conversations: both sides of every exchange as whole sentences, plus each word so it can be tapped
+    for level in data["levels"]:
+        for line in level["alien"]["lines"]:
+            for sentence in (line["pip"], line["say"]):
+                clips[sentence_clip(sentence)] = sentence
+                for word in sentence.split():
                     word = re.sub(r"[^A-Za-z']", "", word)
                     if len(word) == 1:
                         word = word.lower()  # a lone capital is read out as "capital A"

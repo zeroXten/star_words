@@ -270,6 +270,16 @@ const sfx = {
   }),
   // a letter dropping into place; each one a step higher
   place: effect((t, step) => tone(sfxOut, t, pitch('C5', step * 2), 0.1, 'square', 0.16)),
+  // a drum pad: a soft ringing note with a little click on top
+  note: effect((t, name) => {
+    tone(sfxOut, t, pitch(name), 0.5, 'triangle', 0.5, 0, { attack: 0.005, hold: 0.1, release: 0.25 });
+    tone(sfxOut, t, pitch(name, 12), 0.1, 'square', 0.07);
+  }),
+  // hitting the big rock
+  thud: effect((t) => {
+    tone(sfxOut, t, 150, 0.13, 'sine', 0.7, 50);
+    hiss(sfxOut, t, 0.1, 'lowpass', 1800, 300, 0.4);
+  }),
   // collecting a star in a bonus game; the note climbs as the tally grows
   collect: effect((t, n) => tone(sfxOut, t, pitch('C5', (n % 8) * 2), 0.09, 'square', 0.16)),
   // the ship's laser

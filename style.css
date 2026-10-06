@@ -200,7 +200,8 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 .planet.complete .globe { filter: drop-shadow(0 0 6px var(--holo)) drop-shadow(0 0 2px #fff); }
 .pname { font-family: var(--display); font-size: 10px; color: var(--yellow); margin-top: 4px; text-shadow: 2px 2px 0 #000; }
 .pdesc { font-size: 15px; color: #cfd6f5; text-shadow: 1px 1px 0 #000, 0 0 4px #000; }
-.gems { display: flex; gap: 8px; padding: 4px 0; }
+.gems { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.gems b { font-family: var(--display); font-weight: 400; font-size: 10px; color: var(--holo); text-shadow: 2px 2px 0 #000; }
 
 #ship {
   position: absolute;
@@ -405,8 +406,7 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 #play[data-format="talk"] .zone.over { background: #fff3a0; }
 #play[data-format="talk"] .zone[data-who="pip"] { background: #d9f1ff; }
 #play[data-format="talk"] .zone.arrive { animation: arrive .3s steps(4); }
-/* keep room for the three buttons while Pip is talking, so nothing jumps when they appear */
-#play[data-format="talk"] .options { min-height: clamp(88px, min(25vw, 22vh), 148px); }
+#play[data-format="talk"] .options { display: none; }
 .sentence { flex-direction: column; align-items: center; gap: clamp(4px, 1.5vh, 12px); width: 100%; }
 .who { height: clamp(54px, 13vh, 110px); width: auto; }
 .line {
@@ -424,6 +424,8 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 /* reading Pip's line a word at a time: the one to tap next is marked, the ones done lose their dots */
 .w.next { border-bottom: 4px solid #f08a24; background: #ffe81f66; }
 .w.read { border-bottom-color: transparent; }
+/* the alien's own language, before Pip unscrambles it */
+.w.garbled { color: #8a4fc0; transform: rotate(180deg); border-bottom-color: transparent; }
 .w.nudge { animation: nudge .35s steps(4); }
 .sentence.win .w { border-bottom-color: transparent; }
 
@@ -520,7 +522,6 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
   .disc { --d: clamp(60px, 24vh, 100px); }
   .hear { padding: 2px 12px; }
   .who { height: 16vh; }
-  #play[data-format="talk"] .options { min-height: 26vh; }
   .line { font-size: min(5.4vw, 11vh); }
   .sentence { flex-direction: row; justify-content: center; gap: 14px; }
   #play[data-format="find"] .options { flex-direction: row; gap: 12px; }

@@ -1,16 +1,20 @@
 {
   "phrases": {
-    "_story": "Beep boop! I'm Pip. A space storm has scattered the star crystals across the galaxy! Nova and I are flying out to find them. But I can't read the word doors. Can you help us?",
+    "_story": "Beep boop! I'm Pip. A space-storm has scattered the star crystals across the galaxy! Nova and I are flying out to find them. But I can't read the word doors. Can you help us?",
     "_door_listen": "I have three guesses. Tap each one to listen. Then drag the right one up to the word.",
     "_door_find": "Listen to the word. Then tap the word that matches.",
     "_door_missing": "A letter is missing! Tap the letter that finishes the word.",
     "_door_build": "The letters are jumbled up! Tap them in the right order to spell the word.",
-    "_door_talk": "Tap each word to read what I say. Then read the answer, and drag the right one up.",
+    "_door_talk": "Tap each word to read along. I will tell you what our new friend says!",
     "_tap": "Tap the crystal to collect it!",
     "_crystal": "You found a crystal!",
-    "_bonus_catch": "Bonus time! Catch the falling stars!",
+    "_bonus_catch": "Bonus time! Tap the falling stars to catch them!",
     "_bonus_zap": "Bonus time! Tap the space rocks to zap them!",
-    "_bonus_fly": "Bonus time! Fly the ship up and down to scoop up the stars!",
+    "_bonus_fly": "Bonus time! Tap the stars as we fly past!",
+    "_bonus_lights": "Bonus time! Tap the stars to light them up!",
+    "_bonus_crack": "Bonus time! Tap the big rock to crack it open!",
+    "_bonus_drums": "Bonus time! Tap the pads to make some music!",
+    "_bonus_music": "What a lovely tune!",
     "_bonus_done": "Wow! Look at all those stars!",
     "_planetdone": "You found every crystal on this planet. The stars are shining again!",
     "_praise1": "Well done!",
@@ -33,15 +37,60 @@
     "_retry1": "Not quite. Try again.",
     "_retry2": "Have another listen.",
     "_retry3": "Nearly. Try another one.",
-    "_retry4": "Oops, not that one."
+    "_retry4": "Oops, not that one.",
+    "_talk_done": "What a nice chat! Now, let's find those crystals."
   },
+  "systems": [
+    {
+      "id": "gold",
+      "name": "Gold Star",
+      "about": "First words",
+      "colour": "#ffd84a",
+      "at": [78, 92],
+      "planets": ["three-letters", "four-letters", "letter-teams"]
+    },
+    {
+      "id": "red",
+      "name": "Red Star",
+      "about": "Bigger words",
+      "colour": "#ff6b5a",
+      "at": [172, 128],
+      "planets": ["tricky-endings", "longer-words", "big-words"]
+    },
+    {
+      "id": "blue",
+      "name": "Blue Star",
+      "about": "Colours, animals, food",
+      "colour": "#6fb8ff",
+      "at": [70, 206],
+      "planets": ["colours", "animals", "food"]
+    },
+    {
+      "id": "green",
+      "name": "Green Star",
+      "about": "Body, numbers, travel, space",
+      "colour": "#7be08a",
+      "at": [170, 246],
+      "planets": ["body", "numbers", "vehicles", "space"]
+    }
+  ],
   "levels": [
     {
       "id": "three-letters",
       "name": "Three letters",
       "planet": "Zand",
       "env": "desert",
-      "at": [95, 165],
+      "alien": {
+        "name": "Zib",
+        "shape": "blob",
+        "colours": ["#5fd35f", "#2f8f3f", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! Can you help us?", "say": "Yes, I can." },
+          { "pip": "We are looking for a crystal.", "say": "It is in a box." },
+          { "pip": "Where is the box?", "say": "Dig in the mud." },
+          { "pip": "I found it! But it is locked.", "say": "Get the red key." }
+        ]
+      },
       "words": [
         ["cat", "cot", "cap"],
         ["dog", "dig", "dot"],
@@ -66,8 +115,17 @@
       "name": "Four letters",
       "planet": "Fernu",
       "env": "jungle",
-      "at": [60, 120],
-      "from": "three-letters",
+      "alien": {
+        "name": "Bolt",
+        "shape": "robot",
+        "colours": ["#9aa4b5", "#5c6478", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello, robot! What is that?", "say": "It is my jet." },
+          { "pip": "Wow! Can it go fast?", "say": "Yes, it can zip." },
+          { "pip": "Can I have a go?", "say": "Hop on the top." },
+          { "pip": "Wheee! That was fun!", "say": "A gift for you." }
+        ]
+      },
       "words": [
         ["frog", "fog", "flag"],
         ["crab", "grab", "crib"],
@@ -92,8 +150,17 @@
       "name": "Letter teams",
       "planet": "Frostel",
       "env": "ice",
-      "at": [85, 65],
-      "from": "four-letters",
+      "alien": {
+        "name": "Grum",
+        "shape": "monster",
+        "colours": ["#c77dff", "#8a4fc0", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! Can we get past?", "say": "No, not yet." },
+          { "pip": "Oh. What do you want?", "say": "Jam on a bun." },
+          { "pip": "Here you are. Is it good?", "say": "It is the best." },
+          { "pip": "Can we go past now?", "say": "Yes, you can go." }
+        ]
+      },
       "words": [
         ["ship", "shop", "chip"],
         ["fish", "dish", "fist"],
@@ -117,8 +184,17 @@
       "name": "Tricky words",
       "planet": "Coralis",
       "env": "ocean",
-      "at": [150, 45],
-      "from": "letter-teams",
+      "alien": {
+        "name": "Mox",
+        "shape": "hood",
+        "colours": ["#8a5a3a", "#5a3a22", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! We are on a quest.", "say": "I have a map for you." },
+          { "pip": "A map! What is on it?", "say": "A red cross on a hill." },
+          { "pip": "What is at the red cross?", "say": "A big chest of gold." },
+          { "pip": "Thank you! How do we get there?", "say": "Go left at the pond." }
+        ]
+      },
       "words": [
         ["cake", "bake", "coke"],
         ["kite", "bite", "kit"],
@@ -142,8 +218,17 @@
       "name": "Longer words",
       "planet": "Embera",
       "env": "lava",
-      "at": [200, 90],
-      "from": "tricky-endings",
+      "alien": {
+        "name": "Blobba",
+        "shape": "slug",
+        "colours": ["#b8c45a", "#7d8a32", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello, boss! May we come in?", "say": "Stop! This is my land." },
+          { "pip": "Sorry! We just want a crystal.", "say": "Then bring me a snack." },
+          { "pip": "Here is a plum.", "say": "Yum! That was the best." },
+          { "pip": "So, may we have it?", "say": "Yes. Grab it and go!" }
+        ]
+      },
       "words": [
         ["rocket", "pocket", "racket"],
         ["dragon", "wagon", "dagger"],
@@ -167,8 +252,17 @@
       "name": "Big words",
       "planet": "Neon City",
       "env": "city",
-      "at": [205, 155],
-      "from": "longer-words",
+      "alien": {
+        "name": "Tin",
+        "shape": "guard",
+        "colours": ["#f4f4f4", "#b9c0cf", "#3fa9ff"],
+        "lines": [
+          { "pip": "Hello! What is that in your hand?", "say": "This is a strong rope." },
+          { "pip": "What is it for?", "say": "It can lift big rocks." },
+          { "pip": "Can we use it?", "say": "Yes, but bring it back." },
+          { "pip": "Look! A crystal was under the rock!", "say": "Well done! Keep it safe." }
+        ]
+      },
       "words": [
         ["dinosaur", "dynamite", "minotaur"],
         ["elephant", "elegant", "element"],
@@ -193,8 +287,17 @@
       "name": "Colours",
       "planet": "Prisma",
       "env": "candy",
-      "at": [150, 190],
-      "from": "three-letters",
+      "alien": {
+        "name": "Old Grok",
+        "shape": "monster",
+        "colours": ["#e0a060", "#a86a30", "#6fe3ff"],
+        "lines": [
+          { "pip": "Hello! What are you looking for?", "say": "I am hunting for my treasure." },
+          { "pip": "Where did you put it?", "say": "I hid it under a purple rock." },
+          { "pip": "Look! Is that it, over there?", "say": "Yes! You are a clever robot!" },
+          { "pip": "What is inside the box?", "say": "Crystals! Here is one for you." }
+        ]
+      },
       "words": [
         ["red", "bed", "rod"],
         ["blue", "glue", "blow"],
@@ -216,8 +319,17 @@
       "name": "Animals",
       "planet": "Zoola",
       "env": "jungle",
-      "at": [190, 225],
-      "from": "colours",
+      "alien": {
+        "name": "Squee",
+        "shape": "squid",
+        "colours": ["#ff8ab8", "#c04f80", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! Why are you all wet?", "say": "I had a swim in the pool." },
+          { "pip": "Brr! Was it cold?", "say": "Yes, it was full of ice." },
+          { "pip": "Do you need a towel?", "say": "Yes please, I feel so cold." },
+          { "pip": "Here you are. Is that better?", "say": "Much better. This is for you!" }
+        ]
+      },
       "words": [
         ["cow", "now", "cat"],
         ["horse", "house", "hose"],
@@ -241,8 +353,17 @@
       "name": "Food",
       "planet": "Munchi",
       "env": "meadow",
-      "at": [140, 255],
-      "from": "animals",
+      "alien": {
+        "name": "Gloop",
+        "shape": "blob",
+        "colours": ["#6fa8ff", "#3b6fd9", "#ff7ab8"],
+        "lines": [
+          { "pip": "Hello! What are you making?", "say": "I am baking a carrot cake." },
+          { "pip": "Who is it for?", "say": "It is for my little sister." },
+          { "pip": "Is it her birthday?", "say": "Yes, she will be seven today." },
+          { "pip": "Happy birthday to her!", "say": "Thank you! Come to the party!" }
+        ]
+      },
       "words": [
         ["apple", "ankle", "happy"],
         ["bread", "bed", "broad"],
@@ -266,8 +387,17 @@
       "name": "My body",
       "planet": "Wiggle Bay",
       "env": "ocean",
-      "at": [80, 270],
-      "from": "food",
+      "alien": {
+        "name": "Chirp",
+        "shape": "robot",
+        "colours": ["#f08a24", "#b85c12", "#6fe3ff"],
+        "lines": [
+          { "pip": "Hello! Are you all right?", "say": "No, my left arm is stuck." },
+          { "pip": "Shall I fix it for you?", "say": "Yes please, I need some oil." },
+          { "pip": "There! Can you move it now?", "say": "Yes! Look at me wave!" },
+          { "pip": "Hooray! You are fixed!", "say": "Thank you. Take this with you." }
+        ]
+      },
       "words": [
         ["head", "had", "heap"],
         ["nose", "rose", "note"],
@@ -291,8 +421,17 @@
       "name": "Numbers",
       "planet": "Digit City",
       "env": "city",
-      "at": [35, 225],
-      "from": "body",
+      "alien": {
+        "name": "Dot",
+        "shape": "squid",
+        "colours": ["#ffb347", "#c97a1e", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! What are you counting?", "say": "I am counting my six eggs." },
+          { "pip": "Six? I can only see five.", "say": "Oh no! One egg is missing!" },
+          { "pip": "Look! It is under your hat.", "say": "Thank you! Now I have six." },
+          { "pip": "What will hatch from them?", "say": "Six little space dragons!" }
+        ]
+      },
       "words": [
         ["one", "on", "once"],
         ["two", "tow", "twin"],
@@ -315,8 +454,17 @@
       "name": "Things that go",
       "planet": "Vroom",
       "env": "desert",
-      "at": [30, 165],
-      "from": "numbers",
+      "alien": {
+        "name": "Captain Vex",
+        "shape": "guard",
+        "colours": ["#4a5078", "#2c3050", "#e5484d"],
+        "lines": [
+          { "pip": "Hello! Is that your spaceship?", "say": "Yes, but the engine is broken." },
+          { "pip": "What happened to it?", "say": "A big rock hit the wing." },
+          { "pip": "We can help you mend it.", "say": "That would be very kind." },
+          { "pip": "All done! It is as good as new.", "say": "Fantastic! Now I can fly home." }
+        ]
+      },
       "words": [
         ["car", "cart", "jar"],
         ["train", "rain", "tray"],
@@ -339,8 +487,17 @@
       "name": "Space",
       "planet": "Luna Base",
       "env": "moon",
-      "at": [45, 35],
-      "from": "letter-teams",
+      "alien": {
+        "name": "Lanky",
+        "shape": "tall",
+        "colours": ["#9fe0d0", "#5fa898", "#ffe81f"],
+        "lines": [
+          { "pip": "Hello! What can you see up there?", "say": "I can see the green moon." },
+          { "pip": "Is it far away?", "say": "Yes, it is a long trip." },
+          { "pip": "Have you ever been there?", "say": "No, but I wish I had." },
+          { "pip": "Here, look in my telescope!", "say": "Wow! I can see a ship!" }
+        ]
+      },
       "words": [
         ["space", "spice", "pace"],
         ["comet", "comic", "carpet"],
@@ -357,179 +514,6 @@
         ["rocket", "pocket", "racket"],
         ["planet", "plant", "blanket"],
         ["moon", "soon", "moan"]
-      ]
-    }
-  ],
-  "talk": [
-    {
-      "id": "talk-1",
-      "name": "Little chats",
-      "planet": "Blip",
-      "env": "swamp",
-      "at": [70, 85],
-      "aliens": [
-        {
-          "name": "Zib",
-          "shape": "blob",
-          "colours": ["#5fd35f", "#2f8f3f", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello! Can you help us?", "say": ["Yes, I can.", "Yes, I ran.", "Yes, I am."] },
-            { "pip": "We are looking for a crystal.", "say": ["It is in a box.", "It is in a bag.", "It is on a box."] },
-            { "pip": "Where is the box?", "say": ["Dig in the mud.", "Dig in the mug.", "Sit in the mud."] },
-            { "pip": "I found it! But it is locked.", "say": ["Get the red key.", "Get the red cup.", "Get the big key."] }
-          ]
-        },
-        {
-          "name": "Bolt",
-          "shape": "robot",
-          "colours": ["#9aa4b5", "#5c6478", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello, robot! What is that?", "say": ["It is my jet.", "It is my net.", "It is my pet."] },
-            { "pip": "Wow! Can it go fast?", "say": ["Yes, it can zip.", "Yes, it can sip.", "Yes, it can hop."] },
-            { "pip": "Can I have a go?", "say": ["Hop on the top.", "Hop on the mop.", "Sit on the top."] },
-            { "pip": "Wheee! That was fun!", "say": ["A gift for you.", "A lift for you.", "A gift for me."] }
-          ]
-        },
-        {
-          "name": "Grum",
-          "shape": "monster",
-          "colours": ["#c77dff", "#8a4fc0", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello! Can we get past?", "say": ["No, not yet.", "No, not wet.", "No, not you."] },
-            { "pip": "Oh. What do you want?", "say": ["Jam on a bun.", "Jam on a bus.", "Ham on a bun."] },
-            { "pip": "Here you are. Is it good?", "say": ["It is the best.", "It is the nest.", "It is the bus."] },
-            { "pip": "Can we go past now?", "say": ["Yes, you can go.", "Yes, you can dig.", "No, you can go."] }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "talk-2",
-      "name": "Short chats",
-      "planet": "Dusko",
-      "env": "dusk",
-      "at": [170, 120],
-      "from": "talk-1",
-      "aliens": [
-        {
-          "name": "Mox",
-          "shape": "hood",
-          "colours": ["#8a5a3a", "#5a3a22", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello! We are on a quest.", "say": ["I have a map for you.", "I have a mop for you.", "I have a map for him."] },
-            { "pip": "A map! What is on it?", "say": ["A red cross on a hill.", "A red cross on a mill.", "A red dress on a hill."] },
-            { "pip": "What is at the red cross?", "say": ["A big chest of gold.", "A big chest of sand.", "A big nest of gold."] },
-            { "pip": "Thank you! How do we get there?", "say": ["Go left at the pond.", "Go left at the tent.", "Go up at the pond."] }
-          ]
-        },
-        {
-          "name": "Blobba",
-          "shape": "slug",
-          "colours": ["#b8c45a", "#7d8a32", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello, boss! May we come in?", "say": ["Stop! This is my land.", "Stop! This is my hand.", "Stop! That is my land."] },
-            { "pip": "Sorry! We just want a crystal.", "say": ["Then bring me a snack.", "Then bring me a sock.", "Then sing me a snack."] },
-            { "pip": "Here is a plum.", "say": ["Yum! That was the best.", "Yum! That was the rest.", "Yuck! That was the best."] },
-            { "pip": "So, may we have it?", "say": ["Yes. Grab it and go!", "Yes. Grab it and run!", "Yes. Drop it and go!"] }
-          ]
-        },
-        {
-          "name": "Tin",
-          "shape": "guard",
-          "colours": ["#f4f4f4", "#b9c0cf", "#3fa9ff"],
-          "lines": [
-            { "pip": "Hello! What is that in your hand?", "say": ["This is a strong rope.", "This is a strong robe.", "That is a strong rope."] },
-            { "pip": "What is it for?", "say": ["It can lift big rocks.", "It can lift big socks.", "It can lift six rocks."] },
-            { "pip": "Can we use it?", "say": ["Yes, but bring it back.", "Yes, but bring it here.", "No, but bring it back."] },
-            { "pip": "Look! A crystal was under the rock!", "say": ["Well done! Keep it safe.", "Well done! Keep it here.", "Well done! Keep it soft."] }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "talk-3",
-      "name": "Longer chats",
-      "planet": "Aurora",
-      "env": "aurora",
-      "at": [80, 195],
-      "from": "talk-2",
-      "aliens": [
-        {
-          "name": "Lanky",
-          "shape": "tall",
-          "colours": ["#9fe0d0", "#5fa898", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello! What can you see up there?", "say": ["I can see the green moon.", "I can see the green tree.", "I can feel the green moon."] },
-            { "pip": "Is it far away?", "say": ["Yes, it is a long trip.", "Yes, it is a long ship.", "No, it is a long trip."] },
-            { "pip": "Have you ever been there?", "say": ["No, but I wish I had.", "No, but I wish I did.", "Yes, but I wish I had."] },
-            { "pip": "Here, look in my telescope!", "say": ["Wow! I can see a ship!", "Wow! I can see a sheep!", "Wow! I can see a shop!"] }
-          ]
-        },
-        {
-          "name": "Squee",
-          "shape": "squid",
-          "colours": ["#ff8ab8", "#c04f80", "#ffe81f"],
-          "lines": [
-            { "pip": "Hello! Why are you all wet?", "say": ["I had a swim in the pool.", "I had a swim in the pond.", "I had a spin in the pool."] },
-            { "pip": "Brr! Was it cold?", "say": ["Yes, it was full of ice.", "Yes, it was full of mice.", "No, it was full of ice."] },
-            { "pip": "Do you need a towel?", "say": ["Yes please, I feel so cold.", "Yes please, I feel so old.", "No thanks, I feel so cold."] },
-            { "pip": "Here you are. Is that better?", "say": ["Much better. This is for you!", "Much better. This is for me!", "Much wetter. This is for you!"] }
-          ]
-        },
-        {
-          "name": "Chirp",
-          "shape": "robot",
-          "colours": ["#f08a24", "#b85c12", "#6fe3ff"],
-          "lines": [
-            { "pip": "Hello! Are you all right?", "say": ["No, my left arm is stuck.", "No, my left leg is stuck.", "No, my best arm is stuck."] },
-            { "pip": "Shall I fix it for you?", "say": ["Yes please, I need some oil.", "Yes please, I need some soil.", "Yes please, I need some foil."] },
-            { "pip": "There! Can you move it now?", "say": ["Yes! Look at me wave!", "Yes! Look at me dive!", "Yes! Look at me save!"] },
-            { "pip": "Hooray! You are fixed!", "say": ["Thank you. Take this with you.", "Thank you. Take this with me.", "Thank you. Bake this with you."] }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "talk-4",
-      "name": "Big chats",
-      "planet": "Rusty Moon",
-      "env": "redmoon",
-      "at": [175, 235],
-      "from": "talk-3",
-      "aliens": [
-        {
-          "name": "Captain Vex",
-          "shape": "guard",
-          "colours": ["#4a5078", "#2c3050", "#e5484d"],
-          "lines": [
-            { "pip": "Hello! Is that your spaceship?", "say": ["Yes, but the engine is broken.", "Yes, but the window is broken.", "No, but the engine is broken."] },
-            { "pip": "What happened to it?", "say": ["A big rock hit the wing.", "A big rock hit the ring.", "A big sock hit the wing."] },
-            { "pip": "We can help you mend it.", "say": ["That would be very kind.", "That would be very cold.", "That could be very kind."] },
-            { "pip": "All done! It is as good as new.", "say": ["Fantastic! Now I can fly home.", "Fantastic! Now I can fly high.", "Fantastic! Now I can walk home."] }
-          ]
-        },
-        {
-          "name": "Gloop",
-          "shape": "blob",
-          "colours": ["#6fa8ff", "#3b6fd9", "#ff7ab8"],
-          "lines": [
-            { "pip": "Hello! What are you making?", "say": ["I am baking a carrot cake.", "I am baking a carrot pie.", "I am making a parrot cake."] },
-            { "pip": "Who is it for?", "say": ["It is for my little sister.", "It is for my little brother.", "It is from my little sister."] },
-            { "pip": "Is it her birthday?", "say": ["Yes, she will be seven today.", "Yes, she will be eleven today.", "Yes, he will be seven today."] },
-            { "pip": "Happy birthday to her!", "say": ["Thank you! Come to the party!", "Thank you! Come to the park!", "Thank you! Run to the party!"] }
-          ]
-        },
-        {
-          "name": "Old Grok",
-          "shape": "monster",
-          "colours": ["#e0a060", "#a86a30", "#6fe3ff"],
-          "lines": [
-            { "pip": "Hello! What are you looking for?", "say": ["I am hunting for my treasure.", "I am hunting for my teacher.", "I am waiting for my treasure."] },
-            { "pip": "Where did you put it?", "say": ["I hid it under a purple rock.", "I hid it under a purple sock.", "I hid it under a yellow rock."] },
-            { "pip": "Look! Is that it, over there?", "say": ["Yes! You are a clever robot!", "Yes! You are a silly robot!", "Yes! You are a clever rabbit!"] },
-            { "pip": "What is inside the box?", "say": ["Crystals! Here is one for you.", "Crystals! Here is one for me.", "Carrots! Here is one for you."] }
-          ]
-        }
       ]
     }
   ]

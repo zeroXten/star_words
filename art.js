@@ -567,7 +567,8 @@ function drawScene(g, W, H, sc, t, crystals) {
   const idle = sc.target == null && !sc.phase && !sc.bonus;
   sc.places.forEach((p, i) => {
     const pointed = i === next && idle;
-    if (sc.level.aliens) drawAlien(g, p - cam, gy + 1, alienSprite(sc.level.aliens[i]), crystals[i], pointed, t, i);
+    // the first stop on every planet is an alien to chat to; the rest are word doors
+    if (i === 0) drawAlien(g, p - cam, gy + 1, alienSprite(sc.level.alien), crystals[i], pointed, t, i);
     else drawDoor(g, p - cam, gy + 1, env, crystals[i], pointed, t, i);
   });
 
@@ -733,4 +734,53 @@ function drawHyperspace(g, W, H, p) {
     rect(g, '#ffffff', 0, 0, W, H);
     g.globalAlpha = 1;
   }
+}
+
+/* ---------- star systems ---------- */
+
+// A star as it appears on the galaxy map: bright core, soft dithered glow, four rays.
+function sunSprite(colour) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d');
+  for (let y = 0; y < 32; y++) {
+    for (let x = 0; x < 32; x++) {
+      const dx = x - 15.5;
+      const dy = y - 15.5;
+      const d = Math.hypot(dx, dy);
+      const dither = BAYER[(y % 4) * 4 + (x % 4)] / 16;
+      const ray = d < 15.5 && (Math.abs(dx) < 1 || Math.abs(dy) < 1);
+      const fill = d < 4.5 ? '#ffffff' : d < 9 ? colour : ray ? colour : (15 - d) / 6 > dither ? shade(colour, 0.55) : null;
+      if (fill) rect(g, fill, x, y, 1, 1);
+    }
+  }
+  return c;
+}
+
+// The map of one star system: its sun in the middle and a dotted ring for each planet's orbit.
+function systemPicture(W, H, colour, orbits) {
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const g = c.getContext('2d');
+  const cx = W / 2;
+  const cy = H / 2;
+  const haze = ['#05060f', shade(colour, 0.1), shade(colour, 0.17), shade(colour, 0.26)];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const dither = BAYER[(y % 4) * 4 + (x % 4)] / 16;
+      const d = Math.hypot(x - cx, y - cy);
+      const cloud = 0.6 * smoothNoise(x, y, 52, 4) + 0.4 * smoothNoise(x, y, 21, 5);
+      const glow = 1.6 - d / 24 + dither * 0.5;
+      const level = clampInt((cloud * 0.6 + Math.max(0, 1 - d / 120) * 0.5) * 4 - 1.2 + dither, 0, 3);
+      g.fillStyle = glow > 1.3 ? '#ffffff' : glow > 0.95 ? colour : glow > 0.55 ? shade(colour, 0.6) : haze[level];
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  for (let i = 0; i < 220; i++) rect(g, hash(i + 3.3) > 0.8 ? '#ffffff' : '#6f7fc0', hash(i * 1.7) * W, hash(i * 3.1) * H, 1, 1);
+  for (const r of orbits) {
+    const dots = Math.floor((Math.PI * 2 * r) / 5);
+    for (let i = 0; i < dots; i++) rect(g, '#5a6ab0', cx + Math.cos((i / dots) * Math.PI * 2) * r, cy + Math.sin((i / dots) * Math.PI * 2) * r, 1, 1);
+  }
+  return c;
 }
