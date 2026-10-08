@@ -572,10 +572,10 @@ function showQuestion() {
   const [answer, ...others] = round.questions[round.index];
   Object.assign(round, { answer, firstTry: true, locked: false });
   renderProgress();
-  load(clip(answer));
+  if (round.format !== 'talk') load(clip(answer)); // a conversation's words are loaded as they're shown
 
   $('play').dataset.format = round.format;
-  $('hear').hidden = round.format === 'listen';
+  $('hear').hidden = round.format === 'listen' || round.format === 'talk';
   $('word').className = 'word';
   $('options').innerHTML = '';
   $('options').classList.remove('dragged');
@@ -625,8 +625,7 @@ function light(el, ms) {
 
 /* A conversation is read, not tested. Each line appears in a speech bubble and is read by
    tapping its words in order; after the last word the next line takes its place. Pip's
-   lines come first, then the alien's, which arrives garbled until Pip unscrambles it.
-   The Pip button reads the current line aloud instead (see speakLine). */
+   lines come first, then the alien's, which arrives garbled until Pip unscrambles it. */
 
 function readLine(who, picture, sentence, then, garbled) {
   const r = round;
@@ -635,9 +634,8 @@ function readLine(who, picture, sentence, then, garbled) {
   $('zone').classList.remove('arrive');
   void $('zone').offsetWidth;
   $('zone').classList.add('arrive');
-  load(clip(sentence));
 
-  const line = { sentence, words, upTo: 0, busy: true };
+  const line = { upTo: 0, busy: true };
   const current = () => cur === 'play' && round === r && r.index === index && r.line === line;
   line.done = () => current() && then();
   r.line = line;
@@ -681,29 +679,6 @@ function unscramble(words, then) {
     }, 900 + i * 180)
   );
   setTimeout(then, 1100 + words.length * 180);
-}
-
-// The Pip button: the whole line is read aloud, each word lighting up roughly as it's said.
-async function speakLine(r) {
-  const line = r.line;
-  if (!line || line.busy) return;
-  line.busy = true;
-  const buffer = await load(clip(line.sentence));
-  if (r.line !== line) return;
-  const ms = buffer ? buffer.duration * 1000 : 1500;
-  const letters = line.words.reduce((n, w) => n + w.textContent.length + 1, 0);
-  let at = 0;
-  for (const w of line.words) {
-    const share = ((w.textContent.length + 1) / letters) * ms;
-    setTimeout(() => {
-      if (r.line !== line) return;
-      w.className = 'w read';
-      light(w, share);
-    }, at);
-    at += share;
-  }
-  say(clip(line.sentence));
-  setTimeout(line.done, ms + 600);
 }
 
 function alienPicture(alien) {
@@ -1192,7 +1167,6 @@ $('mute').addEventListener('click', () => {
 $('hear').addEventListener('click', () => {
   if (!round || round.locked) return;
   unlockAudio();
-  if (round.format === 'talk') return speakLine(round);
   if (prompt(round)) say(prompt(round));
 });
 
